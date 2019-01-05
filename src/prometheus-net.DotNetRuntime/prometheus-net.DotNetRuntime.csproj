@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
+        <AssemblyName>Prometheus.DotNetRuntime</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="prometheus-net" Version="2.1.3" />
+    </ItemGroup>
+
+</Project>
