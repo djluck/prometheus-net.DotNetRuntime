@@ -18,5 +18,4 @@
     <ItemGroup>
       <ProjectReference Include="..\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntime.csproj" />
     </ItemGroup>
-
 </Project>

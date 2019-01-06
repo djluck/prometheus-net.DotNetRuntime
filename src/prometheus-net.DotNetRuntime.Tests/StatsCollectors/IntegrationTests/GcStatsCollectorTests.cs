@@ -24,7 +24,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
                 var b = new byte[10_000];
             }
 
-            Assert.That(() => StatsCollector.AllocatedBytes.Labels("soh").Value, Is.GreaterThanOrEqualTo(previousValue + 100_000).After(100, 10));
+            Assert.That(() => StatsCollector.AllocatedBytes.Labels("soh").Value, Is.GreaterThanOrEqualTo(previousValue + 100_000).After(500, 10));
         }
 
         [Test]
@@ -32,10 +32,10 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         {
             var previousValue = StatsCollector.AllocatedBytes.Labels("loh").Value;
 
-            // allocate roughly 100kb+ of small objects
-            var b = new byte[100_001];
+            // allocate roughly 100kb+ of large objects
+            var b = new byte[110_000];
 
-            Assert.That(() => StatsCollector.AllocatedBytes.Labels("loh").Value, Is.GreaterThanOrEqualTo(previousValue + 100_000).After(100, 10));
+            Assert.That(() => StatsCollector.AllocatedBytes.Labels("loh").Value, Is.GreaterThanOrEqualTo(previousValue + 100_000).After(500, 10));
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             GC.Collect(2, GCCollectionMode.Forced, true, true);
 
             // assert
-            Assert.That(() => StatsCollector.GcCollectionSeconds.CollectSingle().Count, Is.GreaterThanOrEqualTo(2).After(100, 10)); // at least 3 generations
+            Assert.That(() => StatsCollector.GcCollectionSeconds.CollectSingle().Count, Is.GreaterThanOrEqualTo(1).After(500, 10)); // at least 3 generations
             Assert.That(() => StatsCollector.GcCollectionSeconds.CollectSingle().Select(x => x.histogram.sample_sum), Is.All.GreaterThan(0));
             Assert.That(() => StatsCollector.GcCollectionReasons.CollectSingle().Select(x => x.counter.value), Is.All.GreaterThan(0));
             Assert.That(() => StatsCollector.GcPauseSeconds.CollectSingle().Single().histogram.sample_sum, Is.GreaterThan(0).After(200, 10));

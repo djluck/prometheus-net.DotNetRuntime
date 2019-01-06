@@ -10,7 +10,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
     /// <summary>
     /// Measures the volume of work scheduled on the thread pool and the delay between scheduling the work and it beginning execution.
     /// </summary>
-    internal sealed class ThreadPoolWorkStatsCollector : IEventSourceStatsCollector
+    internal sealed class ThreadPoolSchedulingStatsCollector : IEventSourceStatsCollector
     {
         private const int EventIdThreadPoolEnqueueWork = 30, EventIdThreadPoolDequeueWork = 31;
         private readonly double[] _histogramBuckets;
@@ -21,12 +21,12 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
             x => (long)x.Payload[0]
         );
 
-        public ThreadPoolWorkStatsCollector(double[] histogramBuckets)
+        public ThreadPoolSchedulingStatsCollector(double[] histogramBuckets)
         {
             _histogramBuckets = histogramBuckets;
         }
 
-        public ThreadPoolWorkStatsCollector(): this(Constants.DefaultHistogramBuckets)
+        public ThreadPoolSchedulingStatsCollector(): this(Constants.DefaultHistogramBuckets)
         {
         }
 
@@ -41,9 +41,9 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         {
             var metrics = Metrics.WithCustomRegistry(registry);
 
-            ScheduledCount = metrics.CreateCounter("dotnet_threadpool_work_total", "The total number of items the thread pool has been instructed to execute");
+            ScheduledCount = metrics.CreateCounter("dotnet_threadpool_scheduled_total", "The total number of items the thread pool has been instructed to execute");
             ScheduleDelay = metrics.CreateHistogram(
-                "dotnet_threadpool_work_delay_seconds", 
+                "dotnet_threadpool_scheduling_delay_seconds", 
                 "A breakdown of the latency experienced between an item being scheduled for execution on the thread pool and it starting execution.", 
                 _histogramBuckets
             );

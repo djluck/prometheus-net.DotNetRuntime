@@ -10,11 +10,11 @@ using Prometheus.DotNetRuntime.StatsCollectors;
 namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
 {
     [TestFixture]
-    internal class ThreadPoolWorkStatsCollectorTests : StatsCollectorIntegrationTestBase<ThreadPoolWorkStatsCollector>
+    internal class ThreadPoolSchedulingStatsCollectorTests : StatsCollectorIntegrationTestBase<ThreadPoolSchedulingStatsCollector>
     {
-        protected override ThreadPoolWorkStatsCollector CreateStatsCollector()
+        protected override ThreadPoolSchedulingStatsCollector CreateStatsCollector()
         {
-            return new ThreadPoolWorkStatsCollector();
+            return new ThreadPoolSchedulingStatsCollector();
         }
 
         [Test]

@@ -7,6 +7,10 @@ using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
 namespace Prometheus.DotNetRuntime.StatsCollectors
 {
+    /// <summary>
+    /// Measures how the frequency and duration of garbage collections and volume of allocations. Includes information
+    ///  such as the generation the collection is running for, what triggered the collection and the type of the collection.
+    /// </summary>
     internal sealed class GcStatsCollector : IEventSourceStatsCollector
     {
         private const string

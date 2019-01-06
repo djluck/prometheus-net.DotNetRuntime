@@ -10,11 +10,11 @@ namespace Prometheus.DotNetRuntime
     {
         public static IOnDemandCollector Default()
         {
-            // TODO expand
             return Customize()
                 .WithContentionStats()
                 .WithJitStats()
                 .WithThreadPoolWorkStats()
+                .WithThreadPoolStats()
                 .WithGcStats()
                 .Create();
         }
@@ -35,7 +35,13 @@ namespace Prometheus.DotNetRuntime
 
             public Builder WithThreadPoolWorkStats(double[] histogramBuckets = null)
             {
-                StatsCollectors.Add(new ThreadPoolWorkStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets));
+                StatsCollectors.Add(new ThreadPoolSchedulingStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets));
+                return this;
+            }
+
+            public Builder WithThreadPoolStats()
+            {
+                StatsCollectors.Add(new ThreadPoolStatsCollector());
                 return this;
             }
             
@@ -56,7 +62,7 @@ namespace Prometheus.DotNetRuntime
                 StatsCollectors.Add(new GcStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets));
                 return this;
             }
-            
+
             public Builder WithCustomCollector(IEventSourceStatsCollector statsCollector)
             {
                 StatsCollectors.Add(statsCollector);

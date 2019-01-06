@@ -209,5 +209,17 @@ namespace Prometheus.DotNetRuntime.EventSources
             BackgroundGC,
             ForegroundGC,
         }
+        
+        public enum ThreadAdjustmentReason : uint
+        {
+            Warmup,
+            Initializing,
+            RandomMove,
+            ClimbingMove,
+            ChangePoint,
+            Stabilizing,
+            Starvation,
+            ThreadTimedOut,
+        }
     }
 }
