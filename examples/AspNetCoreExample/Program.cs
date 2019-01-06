@@ -20,7 +20,7 @@ namespace AspNetCoreExample
         public static void Main(string[] args)
         {
             DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(DotNetRuntimeStatsBuilder.Default());
-            var metricServer = new MetricServer(12203);
+            var metricServer = new MetricServer(12204);
             metricServer.Start();
             
             CreateWebHostBuilder(args).Build().Run();
