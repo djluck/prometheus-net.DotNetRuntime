@@ -18,12 +18,12 @@ dotnet add package prometheus-net.DotNetRuntime --version 0.0.6-alpha
 ```
 
 And then register the collector:
-```
+```csharp
 DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(DotNetRuntimeStatsBuilder.Default());
 ```
 
 You can customize the types of .NET metrics collected via the `Customize` method:
-```
+```csharp
 var onDemandCollector = DotNetRuntimeStatsBuilder.Customize()
 	.WithContentionStats()
 	.WithJitStats()
