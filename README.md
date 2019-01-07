@@ -12,7 +12,7 @@ These metrics are essential for understanding the peformance of any non-trivial 
 ## Installation
 **Requires .NET core v2.2+**.
 
-Add the packge using:
+Add the packge from [nuget](https://www.nuget.org/packages/prometheus-net.DotNetRuntime):
 ```
 dotnet add package prometheus-net.DotNetRuntime --version 0.0.6-alpha
 ```
@@ -35,7 +35,7 @@ var onDemandCollector = DotNetRuntimeStatsBuilder.Customize()
 DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(onDemandCollector);
 ```
 
-Once the collector is registered, you should see metrics prefixed with `dotnet_` visible in your metric output.
+Once the collector is registered, you should see metrics prefixed with `dotnet_` visible in your metric output (make sure you are [exporting your metrics](https://github.com/prometheus-net/prometheus-net#http-handler)).
 
 ## Performance impact
 The harder you work the .NET core runtime, the more events it generates. Event generation and processing costs can stack up, especially around these types of events:
