@@ -1,9 +1,9 @@
 # prometheus-net.DotNetMetrics
 A plugin for the [prometheus-net](https://github.com/prometheus-net/prometheus-net) package, exposing .NET core runtime metrics including:
-- Garbage collection collection frequencies and timings by generation/ type, pause timings and GC CPU consumption percentage
+- Garbage collection collection frequencies and timings by generation/ type, pause timings and GC CPU consumption ratio
 - Heap size by generation
 - Bytes allocated by small/ large object heap
-- JIT compilations and JIT CPU consumption percentage
+- JIT compilations and JIT CPU consumption ratio
 - Thread pool size, scheduling delays and reasons for growing/ shrinking
 - Lock contention
 
