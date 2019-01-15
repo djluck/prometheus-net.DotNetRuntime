@@ -9,9 +9,6 @@ A plugin for the [prometheus-net](https://github.com/prometheus-net/prometheus-n
 
 These metrics are essential for understanding the peformance of any non-trivial application. Even if your application is well instrumented, you're only getting half the story- what the runtime is doing completes the picture.
 
-The metrics exposed can drive a rich dashboard:
-![Sample grafana dashboard](docs/grafana-example.PNG)
-
 ## Status
 **This project is currently in alpha**- while this approach has been validated in production by myself using ETW events, this is my first attempt at exposing these runtime metrics via Prometheus. There is also [an issue with GC server mode](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/1) that prevents GC events being emitted correctly, so if you're running an ASP.NET core for example, your GC pause, collection time and heap stats metrics will be incomplete.
 
@@ -42,7 +39,9 @@ DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(onDemandCollector);
 ```
 
 Once the collector is registered, you should see metrics prefixed with `dotnet_` visible in your metric output (make sure you are [exporting your metrics](https://github.com/prometheus-net/prometheus-net#http-handler)).
-
+## Sample Grafana dashboard
+The metrics exposed can drive a rich dashboard, giving you a graphical insight into the performance of your application (Work in progress):
+![Grafana dashboard sample](docs/grafana-example.PNG)
 ## Performance impact
 The harder you work the .NET core runtime, the more events it generates. Event generation and processing costs can stack up, especially around these types of events:
 - **JIT stats**: each method compiled by the JIT compiler emits two events. Most JIT compilation is performed at startup and depending on the size of your application, this could impact your startup performance.
