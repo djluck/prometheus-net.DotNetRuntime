@@ -40,7 +40,8 @@ DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(onDemandCollector);
 
 Once the collector is registered, you should see metrics prefixed with `dotnet_` visible in your metric output (make sure you are [exporting your metrics](https://github.com/prometheus-net/prometheus-net#http-handler)).
 ## Sample Grafana dashboard
-The metrics exposed can drive a rich dashboard, giving you a graphical insight into the performance of your application (Work in progress):
+The metrics exposed can drive a rich dashboard, giving you a graphical insight into the performance of your application ( [exported dashboard available here](examples/NET_runtime_metrics_dashboard.json), work in progress):
+
 ![Grafana dashboard sample](docs/grafana-example.PNG)
 ## Performance impact
 The harder you work the .NET core runtime, the more events it generates. Event generation and processing costs can stack up, especially around these types of events:
