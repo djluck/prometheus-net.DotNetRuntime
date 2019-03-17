@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
-using Prometheus.Advanced;
+#if PROMV2
+using Prometheus.Advanced;    
+#endif
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
 namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
@@ -16,7 +18,11 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
         [SetUp]
         public void SetUp()
         {
+#if PROMV2
             _metricFactory = new MetricFactory(new DefaultCollectorRegistry());
+#elif PROMV3
+            _metricFactory = Metrics.WithCustomRegistry(Metrics.NewCustomRegistry());
+#endif
         }
         
         [Test]
@@ -124,7 +130,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
         {
             // arrange
             var ratio = Arrange_ratio(TimeSpan.Zero, TimeSpan.FromSeconds(5));
-            var histo = _metricFactory.CreateHistogram("event_time_total_seconds", "", null, "label_1", "label_2");
+            var histo = _metricFactory.CreateHistogram("event_time_total_seconds", "", labelNames: new [] {"label1", "label2"});
             histo.Labels("a", "b").Observe(1.0);
             histo.Labels("a", "c").Observe(0.25);
             histo.Labels("d", "e").Observe(1.25);

@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using Prometheus.Advanced.DataContracts;
+#if PROMV2
+using Prometheus.Advanced;
+#endif
 
 namespace Prometheus.DotNetRuntime.StatsCollectors.Util
 {
@@ -73,12 +75,12 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
 
         public double CalculateConsumedRatio(Counter eventCpuConsumedTotalSeconds)
         {
-            return CalculateConsumedRatio(eventCpuConsumedTotalSeconds.CollectSingle().Sum(x => x.counter.value));            
+            return CalculateConsumedRatio(eventCpuConsumedTotalSeconds.CollectAllValues().Sum(x => x));            
         }
         
         public double CalculateConsumedRatio(Histogram eventCpuConsumedSeconds)
         {
-            return CalculateConsumedRatio(eventCpuConsumedSeconds.CollectSingle().Sum(x => x.histogram.sample_sum));            
+            return CalculateConsumedRatio(eventCpuConsumedSeconds.CollectAllSumValues().Sum(x => x));            
         }
     }
 }

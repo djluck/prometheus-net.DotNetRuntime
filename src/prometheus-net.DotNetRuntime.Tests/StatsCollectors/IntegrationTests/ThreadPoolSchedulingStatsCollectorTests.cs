@@ -3,8 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Prometheus.Advanced;
-using Prometheus.DotNetRuntime;
 using Prometheus.DotNetRuntime.StatsCollectors;
 
 namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
@@ -25,16 +23,15 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             
             // act (Task.Run will execute the function on the thread pool)
             // There seems to be either a bug in the implementation of .NET core or a bug in my understanding...
-            // First call to Task.Run triggers a qequeued event but not a queue event. For now, call twice 
+            // First call to Task.Run triggers a queued event but not a queue event. For now, call twice 
             await Task.Run(() => 1 );
             var sp = Stopwatch.StartNew();
-            await Task.Run(() => sp.Stop() );
+            await Task.Run(() => sp.Stop());
+            sp.Stop();
             
             Assert.That(() => StatsCollector.ScheduledCount.Value, Is.GreaterThanOrEqualTo(1).After(100, 10));
-            var histogramValue = StatsCollector.ScheduleDelay.CollectSingle().First().histogram;
-            
-            Assert.That(histogramValue.sample_count, Is.GreaterThanOrEqualTo(1));
-            Assert.That(histogramValue.sample_sum, Is.EqualTo(sp.Elapsed.TotalSeconds).Within(0.01));
+            Assert.That(StatsCollector.ScheduleDelay.CollectAllCountValues().Single(), Is.GreaterThanOrEqualTo(1));
+            Assert.That(StatsCollector.ScheduleDelay.CollectAllSumValues().Single(), Is.EqualTo(sp.Elapsed.TotalSeconds).Within(0.01));
         }
     }
 }

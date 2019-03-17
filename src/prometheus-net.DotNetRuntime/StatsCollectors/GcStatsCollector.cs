@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+#if PROMV2
 using Prometheus.Advanced;
+#endif
 using Prometheus.DotNetRuntime.EventSources;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
@@ -67,19 +69,26 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         internal Gauge GcNumPinnedObjects { get; private set; }
         internal Gauge GcFinalizationQueueLength { get; private set; }
 
-        public void RegisterMetrics(ICollectorRegistry registry)
+        public void RegisterMetrics(MetricFactory metrics)
         {
-            var metrics = new MetricFactory(registry);
             GcCollectionSeconds = metrics.CreateHistogram(
                 "dotnet_gc_collection_seconds",
                 "The amount of time spent running garbage collections",
-                _histogramBuckets,
-                LabelGeneration, LabelType);
+                    new HistogramConfiguration()
+                    {
+                        Buckets = _histogramBuckets,
+                        LabelNames = new []{ LabelGeneration, LabelType }
+                    }
+                );
 
             GcPauseSeconds = metrics.CreateHistogram(
                 "dotnet_gc_pause_seconds",
                 "The amount of time execution was paused for garbage collection",
-                _histogramBuckets);
+                new HistogramConfiguration()
+                    {
+                        Buckets = _histogramBuckets
+                    }
+                );
 
             GcCollectionReasons = metrics.CreateCounter(
                 "dotnet_gc_collection_reasons_total",

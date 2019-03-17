@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+#if PROMV2
 using Prometheus.Advanced;
+#endif
 using Prometheus.DotNetRuntime.EventSources;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
@@ -34,10 +36,8 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         internal Counter MethodsJittedSecondsTotal { get; private set; }
         internal Gauge CpuRatio { get; private set; }
 
-        public void RegisterMetrics(ICollectorRegistry registry)
+        public void RegisterMetrics(MetricFactory metrics)
         {
-            var metrics = new MetricFactory(registry);
-
             MethodsJittedTotal = metrics.CreateCounter("dotnet_jit_method_total", "Total number of methods compiled by the JIT compiler", DynamicLabel);
             MethodsJittedSecondsTotal = metrics.CreateCounter("dotnet_jit_method_seconds_total", "Total number of seconds spent in the JIT compiler", DynamicLabel);
             CpuRatio = metrics.CreateGauge("dotnet_jit_cpu_ratio", "The amount of total CPU time consumed spent JIT'ing");

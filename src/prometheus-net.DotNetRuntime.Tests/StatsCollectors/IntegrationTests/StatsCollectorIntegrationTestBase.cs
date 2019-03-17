@@ -1,6 +1,8 @@
 using System.Threading;
 using NUnit.Framework;
-using Prometheus.Advanced;
+#if PROMV2
+using Prometheus.Advanced;    
+#endif
 using Prometheus.DotNetRuntime;
 using Prometheus.DotNetRuntime.StatsCollectors;
 
@@ -17,8 +19,12 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         public void SetUp()
         {
             StatsCollector = CreateStatsCollector();
-            StatsCollector.RegisterMetrics(new DefaultCollectorRegistry());
-            _eventListener = new DotNetEventListener(StatsCollector);
+#if PROMV2
+            StatsCollector.RegisterMetrics(new MetricFactory(new DefaultCollectorRegistry()));
+#elif PROMV3
+            StatsCollector.RegisterMetrics(Metrics.WithCustomRegistry(Metrics.NewCustomRegistry()));
+#endif
+            _eventListener = new DotNetEventListener(StatsCollector, null);
             Thread.Sleep(100); // wait for event listener thread to spin up
         }
 

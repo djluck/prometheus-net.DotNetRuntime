@@ -1,7 +1,10 @@
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Prometheus.Advanced;
+#if PROMV2
+using Prometheus.Advanced;    
+#endif
 using Prometheus.DotNetRuntime.StatsCollectors;
 
 namespace Prometheus.DotNetRuntime.Tests
@@ -18,8 +21,7 @@ namespace Prometheus.DotNetRuntime.Tests
         public async Task Default_registers_all_expected_stats()
         {
             // arrange
-            DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(DotNetRuntimeStatsBuilder.Default());
-
+            using (DotNetRuntimeStatsBuilder.Default().StartCollecting())
             using (var metricServer = new MetricServer(12203))
             using (var client = new HttpClient())
             {
@@ -48,6 +50,27 @@ namespace Prometheus.DotNetRuntime.Tests
                 .WithCustomCollector(new GcStatsCollector());
 
             Assert.That(builder.StatsCollectors.Count, Is.EqualTo(1));
+        }
+        
+        [Test]
+        public void StartCollecting_Does_Not_Allow_Two_Collectors_To_Run_Simultaneously()
+        {
+            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
+            {
+                Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
+            }
+        }
+        
+        [Test]
+        public void StartCollecting_Allows_A_New_Collector_To_Run_After_Disposing_A_Previous_Collector()
+        {
+            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
+            {
+            }
+            
+            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
+            {
+            }
         }
     }
 }

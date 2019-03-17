@@ -1,30 +1,33 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Tracing;
+#if PROMV2
 using Prometheus.Advanced;
+#endif
 using Prometheus.DotNetRuntime.StatsCollectors;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
 namespace Prometheus.DotNetRuntime
 {
     /// <summary>
-    /// Configures a new <see cref="IOnDemandCollector"/> that will collect .NET core runtime statistics.
+    /// Configures what .NET core runtime metrics will be collected. 
     /// </summary>
     public static class DotNetRuntimeStatsBuilder
     {
         /// <summary>
-        /// Returns a <see cref="IOnDemandCollector"/> that will capture all available .NET runtime metrics
-        /// by default. 
+        /// Includes all available .NET runtime metrics by default. Call <see cref="Builder.StartCollecting"/>
+        /// to begin collecting metrics.
         /// </summary>
         /// <returns></returns>
-        public static IOnDemandCollector Default()
+        public static Builder Default()
         {
             return Customize()
                 .WithContentionStats()
                 .WithJitStats()
                 .WithThreadPoolSchedulingStats()
                 .WithThreadPoolStats()
-                .WithGcStats()
-                .Create();
+                .WithGcStats();
         }
 
         /// <summary>
@@ -32,7 +35,7 @@ namespace Prometheus.DotNetRuntime
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// Include specific .NET runtime metrics by calling the WithXXX() methods and then call Create().
+        /// Include specific .NET runtime metrics by calling the WithXXX() methods and then call <see cref="Builder.StartCollecting"/>
         /// </remarks>
         public static Builder Customize()
         {
@@ -41,17 +44,31 @@ namespace Prometheus.DotNetRuntime
 
         public class Builder
         {
+            private Action<Exception> _errorHandler;
             internal HashSet<IEventSourceStatsCollector> StatsCollectors { get; } = new HashSet<IEventSourceStatsCollector>(new TypeEquality<IEventSourceStatsCollector>());
             
             /// <summary>
-            /// Finishes configuration and returns a <see cref="IOnDemandCollector"/> that will
-            /// collect the specified .NET metrics.  
+            /// Finishes configuration and starts collecting .NET runtime metrics. Returns a <see cref="IDisposable"/> that
+            /// can be disposed of to stop metric collection. 
             /// </summary>
             /// <returns></returns>
-            public IOnDemandCollector Create()
+            public IDisposable StartCollecting()
             {
-                return new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet());
+                if (DotNetRuntimeStatsCollector.Instance != null)
+                {
+                    throw new InvalidOperationException(".NET runtime metrics are already being collected. Dispose() of your previous collector before calling this method again.");
+                }
+                
+                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler);
+#if PROMV2
+                DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(runtimeStatsCollector);
+#elif PROMV3
+                runtimeStatsCollector.RegisterMetrics(Metrics.DefaultRegistry);
+                Metrics.DefaultRegistry.AddBeforeCollectCallback(runtimeStatsCollector.UpdateMetrics);
+#endif
+                return runtimeStatsCollector;
             }
+
 
             /// <summary>
             /// Include metrics around the volume of work scheduled on the worker thread pool
@@ -104,13 +121,21 @@ namespace Prometheus.DotNetRuntime
                 return this;
             }
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="statsCollector"></param>
             public Builder WithCustomCollector(IEventSourceStatsCollector statsCollector)
             {
                 StatsCollectors.Add(statsCollector);
+                return this;
+            }
+
+            /// <summary>
+            /// Specifies a function to call when an exception occurs within the .NET stats collectors.
+            /// Only one error handler may be specified.
+            /// </summary>
+            /// <param name="handler"></param>
+            /// <returns></returns>
+            public Builder WithErrorHandler(Action<Exception> handler)
+            {
+                _errorHandler = handler;
                 return this;
             }
             

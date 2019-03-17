@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics.Tracing;
+#if PROMV2
 using Prometheus.Advanced;
+#endif
 using Prometheus.DotNetRuntime.EventSources;
 
 namespace Prometheus.DotNetRuntime
@@ -9,7 +11,7 @@ namespace Prometheus.DotNetRuntime
     /// Defines an interface register for and receive .NET runtime events. Events can then be aggregated
     /// and measured as prometheus metrics.
     /// </summary>
-    public interface IEventSourceStatsCollector : IOnDemandCollector
+    public interface IEventSourceStatsCollector
     {
         /// <summary>
         /// The unique id of the event source to receive events from.
@@ -37,5 +39,16 @@ namespace Prometheus.DotNetRuntime
         /// Implementors should listen to events and perform some kind of aggregation, emitting this to prometheus.
         /// </remarks>
         void ProcessEvent(EventWrittenEventArgs e);
+        
+        /// <summary>
+        /// Called when the instance is associated with a collector registry, so that the collectors managed
+        /// by this instance can be registered.
+        /// </summary>
+        void RegisterMetrics(MetricFactory metrics);
+
+        /// <summary>
+        /// Called before each collection. Any values in collectors managed by this instance should now be brought up to date.
+        /// </summary>
+        void UpdateMetrics();
     }
 }

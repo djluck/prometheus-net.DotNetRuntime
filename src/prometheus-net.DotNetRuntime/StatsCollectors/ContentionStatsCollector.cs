@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics.Tracing;
+#if PROMV2
 using Prometheus.Advanced;
+#endif
 using Prometheus.DotNetRuntime.EventSources;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
@@ -26,10 +28,8 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         internal Counter ContentionSecondsTotal { get; private set; }
         internal Counter ContentionTotal { get; private set; }
 
-        public void RegisterMetrics(ICollectorRegistry registry)
+        public void RegisterMetrics(MetricFactory metrics)
         {
-            var metrics = Metrics.WithCustomRegistry(registry);
-
             ContentionSecondsTotal = metrics.CreateCounter("dotnet_contention_seconds_total", "The total amount of time spent contending locks");
             ContentionTotal = metrics.CreateCounter("dotnet_contention_total", "The number of locks contended");
         }

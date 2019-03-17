@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.Linq;
+#if PROMV2
 using Prometheus.Advanced;
+#endif
 using Prometheus.DotNetRuntime.EventSources;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
@@ -37,15 +39,16 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         internal Counter ScheduledCount { get; private set; }
         internal Histogram ScheduleDelay { get; private set; }
 
-        public void RegisterMetrics(ICollectorRegistry registry)
+        public void RegisterMetrics(MetricFactory metrics)
         {
-            var metrics = Metrics.WithCustomRegistry(registry);
-
             ScheduledCount = metrics.CreateCounter("dotnet_threadpool_scheduled_total", "The total number of items the thread pool has been instructed to execute");
             ScheduleDelay = metrics.CreateHistogram(
-                "dotnet_threadpool_scheduling_delay_seconds", 
-                "A breakdown of the latency experienced between an item being scheduled for execution on the thread pool and it starting execution.", 
-                _histogramBuckets
+                "dotnet_threadpool_scheduling_delay_seconds",
+                "A breakdown of the latency experienced between an item being scheduled for execution on the thread pool and it starting execution.",
+                new HistogramConfiguration()
+                {
+                    Buckets = _histogramBuckets
+                }
             );
         }
 

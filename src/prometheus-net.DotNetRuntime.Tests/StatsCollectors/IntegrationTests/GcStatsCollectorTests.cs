@@ -73,10 +73,10 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             GC.Collect(2, GCCollectionMode.Forced, true, true);
 
             // assert
-            Assert.That(() => StatsCollector.GcCollectionSeconds.CollectSingle().Count, Is.GreaterThanOrEqualTo(1).After(500, 10)); // at least 3 generations
-            Assert.That(() => StatsCollector.GcCollectionSeconds.CollectSingle().Select(x => x.histogram.sample_sum), Is.All.GreaterThan(0));
-            Assert.That(() => StatsCollector.GcCollectionReasons.CollectSingle().Select(x => x.counter.value), Is.All.GreaterThan(0));
-            Assert.That(() => StatsCollector.GcPauseSeconds.CollectSingle().Single().histogram.sample_sum, Is.GreaterThan(0).After(200, 10));
+            Assert.That(() => StatsCollector.GcCollectionSeconds.CollectAllCountValues().Count(), Is.GreaterThanOrEqualTo(1).After(500, 10)); // at least 3 generations
+            Assert.That(() => StatsCollector.GcCollectionSeconds.CollectAllSumValues(excludeUnlabeled: true), Is.All.GreaterThan(0));
+            Assert.That(() => StatsCollector.GcCollectionReasons.CollectAllValues(excludeUnlabeled: true), Is.All.GreaterThan(0));
+            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllSumValues().Single(), Is.GreaterThan(0).After(200, 10));
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         {
             // arrange
             GC.Collect(2, GCCollectionMode.Forced, true, true);
-            Assert.That(() => StatsCollector.GcPauseSeconds.CollectSingle().First().histogram.sample_count, Is.GreaterThan(0).After(200, 10));
+            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllCountValues().First(), Is.GreaterThan(0).After(5000, 100));
             
             // act
             StatsCollector.UpdateMetrics();

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Prometheus;
-using Prometheus.Advanced;
 using Prometheus.DotNetRuntime;
 
 namespace AspNetCoreExample
@@ -19,7 +18,10 @@ namespace AspNetCoreExample
         
         public static void Main(string[] args)
         {
-            DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(DotNetRuntimeStatsBuilder.Default());
+            DotNetRuntimeStatsBuilder.Default().WithErrorHandler(e =>
+            {
+                Console.WriteLine(e.ToString());
+            }).StartCollecting();
             var metricServer = new MetricServer(12204);
             metricServer.Start();
             

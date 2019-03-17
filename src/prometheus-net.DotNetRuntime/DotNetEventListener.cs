@@ -10,10 +10,12 @@ namespace Prometheus.DotNetRuntime
     internal sealed class DotNetEventListener : EventListener
     {
         private readonly IEventSourceStatsCollector _collector;
+        private readonly Action<Exception> _errorHandler;
 
-        internal DotNetEventListener(IEventSourceStatsCollector collector) : base()
+        internal DotNetEventListener(IEventSourceStatsCollector collector, Action<Exception> errorHandler) : base()
         {
             _collector = collector;
+            _errorHandler = errorHandler;
             EnableEventSources(collector);
         }
 
@@ -31,7 +33,14 @@ namespace Prometheus.DotNetRuntime
         
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            _collector.ProcessEvent(eventData);
+            try
+            {
+                _collector.ProcessEvent(eventData);
+            }
+            catch (Exception e)
+            {
+                _errorHandler(e);
+            }
         }
     }
 }

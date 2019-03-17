@@ -16,26 +16,28 @@ These metrics are essential for understanding the peformance of any non-trivial 
 **Requires .NET core v2.2+**.
 
 Add the packge from [nuget](https://www.nuget.org/packages/prometheus-net.DotNetRuntime):
-```
-dotnet add package prometheus-net.DotNetRuntime --version 0.0.6-alpha
+```powershell
+# If you're using v2 of prometheus-net
+dotnet add package prometheus-net.DotNetRuntime --version 2.0.7-beta
+
+# If you're using v3 of prometheus-net
+dotnet add package prometheus-net.DotNetRuntime --version 3.0.7-beta
 ```
 
-And then register the collector:
+And then start the collector:
 ```csharp
-DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(DotNetRuntimeStatsBuilder.Default());
+IDisposable collector = DotNetRuntimeStatsBuilder.Default().StartCollecting()
 ```
 
 You can customize the types of .NET metrics collected via the `Customize` method:
 ```csharp
-var onDemandCollector = DotNetRuntimeStatsBuilder.Customize()
+IDisposable collector = DotNetRuntimeStatsBuilder.Customize()
 	.WithContentionStats()
 	.WithJitStats()
 	.WithThreadPoolSchedulingStats()
 	.WithThreadPoolStats()
 	.WithGcStats()
-	.Create();
-				
-DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(onDemandCollector);
+	.StartCollecting();
 ```
 
 Once the collector is registered, you should see metrics prefixed with `dotnet_` visible in your metric output (make sure you are [exporting your metrics](https://github.com/prometheus-net/prometheus-net#http-handler)).

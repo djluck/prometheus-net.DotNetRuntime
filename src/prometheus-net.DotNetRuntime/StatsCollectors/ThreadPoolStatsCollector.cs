@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+#if PROMV2
 using Prometheus.Advanced;
+#endif
 using Prometheus.DotNetRuntime.EventSources;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
@@ -34,10 +36,8 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         public EventKeywords Keywords => (EventKeywords) DotNetRuntimeEventSource.Keywords.Threading;
         public EventLevel Level => EventLevel.Informational;
 
-        public void RegisterMetrics(ICollectorRegistry registry)
+        public void RegisterMetrics(MetricFactory metrics)
         {
-            var metrics = new MetricFactory(registry);
-
             NumThreads = metrics.CreateGauge("dotnet_threadpool_num_threads", "The number of active threads in the thread pool");
             NumIocThreads = metrics.CreateGauge("dotnet_threadpool_io_num_threads", "The number of active threads in the IO thread pool");
             // Throughput = metrics.CreateCounter("dotnet_threadpool_throughput_total", "The total number of work items that have finished execution in the thread pool");

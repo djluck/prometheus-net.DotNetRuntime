@@ -1,10 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.Threading;
 using NUnit.Framework;
-using Prometheus.Advanced;
 using Prometheus.DotNetRuntime;
 using Prometheus.DotNetRuntime.StatsCollectors;
-using ProtoBuf.Meta;
+
 
 namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
 {

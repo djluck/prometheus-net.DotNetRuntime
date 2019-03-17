@@ -11,7 +11,6 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
-using Prometheus.Advanced;
 using Prometheus.DotNetRuntime;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
@@ -24,9 +23,7 @@ namespace Benchmarks
             var p = new Prometheus.MetricServer(12203);
             p.Start();
 
-            var collector = DotNetRuntimeStatsBuilder.Default();
-            
-            DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(collector);
+            var collector = DotNetRuntimeStatsBuilder.Default().StartCollecting();
             
 
             var tasks = Enumerable.Range(1, 2_000_000)
