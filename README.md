@@ -10,7 +10,7 @@ A plugin for the [prometheus-net](https://github.com/prometheus-net/prometheus-n
 These metrics are essential for understanding the peformance of any non-trivial application. Even if your application is well instrumented, you're only getting half the story- what the runtime is doing completes the picture.
 
 ## Status
-**This project is currently in alpha**- while this approach has been validated in production by myself using ETW events, this is my first attempt at exposing these runtime metrics via Prometheus. There is also [an issue with GC server mode](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/1) that prevents GC events being emitted correctly, so if you're running an ASP.NET core for example, your GC pause, collection time and heap stats metrics will be incomplete.
+**This project is currently in beta**- while this approach has been validated in production by myself using ETW events, this is my first attempt at exposing these runtime metrics via Prometheus. There is also [an issue with GC server mode](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/1) that prevents GC events being emitted correctly, so if you're running an ASP.NET core for example, your GC pause, collection time and heap stats metrics will be incomplete.
 
 ## Installation
 **Requires .NET core v2.2+**.
