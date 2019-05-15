@@ -18,10 +18,10 @@ These metrics are essential for understanding the peformance of any non-trivial 
 Add the packge from [nuget](https://www.nuget.org/packages/prometheus-net.DotNetRuntime):
 ```powershell
 # If you're using v2 of prometheus-net
-dotnet add package prometheus-net.DotNetRuntime --version 2.0.7-beta
+dotnet add package prometheus-net.DotNetRuntime --version 2.0.8-beta
 
 # If you're using v3 of prometheus-net
-dotnet add package prometheus-net.DotNetRuntime --version 3.0.7-beta
+dotnet add package prometheus-net.DotNetRuntime --version 3.0.8-beta
 ```
 
 And then start the collector:
