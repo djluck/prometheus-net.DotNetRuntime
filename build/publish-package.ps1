@@ -45,6 +45,6 @@ TestRelease(2)
 TestRelease(3)
 
 # Build and release each version
-#BuildAndPublishRelease(2)
+BuildAndPublishRelease(2)
 BuildAndPublishRelease(3) 
 
