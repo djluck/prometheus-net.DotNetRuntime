@@ -9,6 +9,6 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-        <PackageReference Include="prometheus-net.DotNetRuntime" Version="2.0.7-beta" />
+        <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.0.8-beta" />
     </ItemGroup>
 </Project>

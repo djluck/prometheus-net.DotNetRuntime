@@ -58,7 +58,6 @@ namespace Prometheus.DotNetRuntime
         /// </summary>
         internal static IEnumerable<double> CollectAllValues(this Counter counter, bool excludeUnlabeled = false)
         {
-            IHistogram h;
             return CollectAllMetrics<Counter, Counter.Child, ICounter, double>(counter, c => c.Value, excludeUnlabeled);
         }
 

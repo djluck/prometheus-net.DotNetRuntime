@@ -1,4 +1,6 @@
+using System;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 #if PROMV2
 using Prometheus.Advanced;    
@@ -25,7 +27,15 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             StatsCollector.RegisterMetrics(Metrics.WithCustomRegistry(Metrics.NewCustomRegistry()));
 #endif
             _eventListener = new DotNetEventListener(StatsCollector, null);
-            Thread.Sleep(100); // wait for event listener thread to spin up
+            
+            // wait for event listener thread to spin up
+            while (!_eventListener.StartedReceivingEvents)
+            {
+                Thread.Sleep(10); 
+                Console.Write("Waiting.. ");
+                
+            }
+            Console.WriteLine("EventListener should be active now.");
         }
 
         [TearDown]

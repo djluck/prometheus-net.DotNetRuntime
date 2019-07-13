@@ -28,7 +28,8 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         /// <returns></returns>
         public static Ratio ProcessTotalCpu()
         {
-            return new Ratio(() => Process.GetCurrentProcess().TotalProcessorTime);
+            var p = Process.GetCurrentProcess();
+            return new Ratio(() => p.TotalProcessorTime);
         }
         
         /// <summary>
@@ -50,7 +51,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
             if (eventsConsumedTimeSeconds < 0.0)
             {
                 // In this case, the difference between our last observed events CPU time and the current events CPU time is negative.
-                // This means that we are being passed a non-counting value (which the caller should not be doing).
+                // This means that we are being passed a non-incrementing value (which the caller should not be doing).
                 // Rather than throwing an exception which could jeopardize the stability of event collection, we'll return a zero
                 // TODO re-visit this and consider how to notify the user this is occurring 
                 return 0.0;

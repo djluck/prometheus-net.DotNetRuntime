@@ -20,7 +20,8 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         private readonly EventPairTimer<long> _eventPairTimer = new EventPairTimer<long>(
             EventIdThreadPoolEnqueueWork, 
             EventIdThreadPoolDequeueWork, 
-            x => (long)x.Payload[0]
+            x => (long)x.Payload[0],
+            new Cache<long, EventPairTimer<long, int>.EventDataWrapper>(TimeSpan.FromSeconds(30), initialCapacity: 512)
         );
 
         public ThreadPoolSchedulingStatsCollector(double[] histogramBuckets)

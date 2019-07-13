@@ -18,6 +18,8 @@ namespace Prometheus.DotNetRuntime
             _errorHandler = errorHandler;
             EnableEventSources(collector);
         }
+        
+        internal bool StartedReceivingEvents { get; private set; }
 
         private void EnableEventSources(IEventSourceStatsCollector forCollector)
         {
@@ -27,6 +29,7 @@ namespace Prometheus.DotNetRuntime
                 if (es.Guid == forCollector.EventSourceGuid)
                 {
                     EnableEvents(es, forCollector.Level, forCollector.Keywords);
+                    StartedReceivingEvents = true;
                 }
             };
         }

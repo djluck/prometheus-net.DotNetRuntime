@@ -14,18 +14,24 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         where TId : struct
         where TEventData : struct
     {
-        private readonly Cache<TId, EventDataWrapper> _eventStartedAtCache = new Cache<TId, EventDataWrapper>(TimeSpan.FromMinutes(5)); 
+        private readonly Cache<TId, EventDataWrapper> _eventStartedAtCache; 
         private readonly int _startEventId;
         private readonly int _endEventId;
         private readonly Func<EventWrittenEventArgs, TId> _extractEventIdFn;
         private readonly Func<EventWrittenEventArgs, TEventData> _extractData;
 
-        public EventPairTimer(int startEventId, int endEventId, Func<EventWrittenEventArgs, TId> extractEventIdFn, Func<EventWrittenEventArgs, TEventData> extractData)
+        public EventPairTimer(
+            int startEventId, 
+            int endEventId, 
+            Func<EventWrittenEventArgs, TId> extractEventIdFn, 
+            Func<EventWrittenEventArgs, TEventData> extractData,
+            Cache<TId, EventDataWrapper> cache = null)
         {
             _startEventId = startEventId;
             _endEventId = endEventId;
             _extractEventIdFn = extractEventIdFn;
             _extractData = extractData;
+            _eventStartedAtCache = cache ?? new Cache<TId, EventDataWrapper>(TimeSpan.FromMinutes(1));
         }
         
         /// <summary>
@@ -44,7 +50,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
             if (e.EventId == _endEventId)
             {
                 var id = _extractEventIdFn(e);
-                if (_eventStartedAtCache.TryGetValue(id, out var startEvent))
+                if (_eventStartedAtCache.TryRemove(id, out var startEvent))
                 {
                     startEventData = startEvent.Data;
                     duration = e.TimeStamp - startEvent.TimeStamp;
@@ -65,7 +71,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
             return false;
         }
 
-        private struct EventDataWrapper
+        public struct EventDataWrapper
         {
             public EventDataWrapper(TEventData data, DateTime timeStamp)
             {
@@ -78,12 +84,12 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         }
     }
     
-     public sealed class EventPairTimer<TId> : EventPairTimer<TId, int>
+    public sealed class EventPairTimer<TId> : EventPairTimer<TId, int>
         where TId : struct
     {
       
-        public EventPairTimer(int startEventId, int endEventId, Func<EventWrittenEventArgs, TId> extractEventIdFn) 
-            : base(startEventId, endEventId, extractEventIdFn, e => 0)
+        public EventPairTimer(int startEventId, int endEventId, Func<EventWrittenEventArgs, TId> extractEventIdFn, Cache<TId, EventDataWrapper> cache = null) 
+            : base(startEventId, endEventId, extractEventIdFn, e => 0, cache)
         {
         }
         

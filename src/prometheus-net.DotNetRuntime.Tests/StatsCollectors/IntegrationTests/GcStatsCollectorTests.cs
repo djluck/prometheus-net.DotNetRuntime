@@ -64,7 +64,6 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             Assert.That(() => StatsCollector.GcFinalizationQueueLength.Value, Is.GreaterThan(0).After(200, 10));
         }
 
-
         [Test]
         public void When_a_garbage_collection_is_performed_then_the_collection_and_pause_stats_and_reasons_are_updated()
         {
@@ -84,14 +83,31 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         {
             // arrange
             GC.Collect(2, GCCollectionMode.Forced, true, true);
-            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllCountValues().First(), Is.GreaterThan(0).After(5000, 100));
-            
-            // act
-            StatsCollector.UpdateMetrics();
 
+            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllCountValues().First(), Is.GreaterThan(0).After(2000, 100));
+
+            // act 
+            StatsCollector.UpdateMetrics();
+            
             // assert
-            Assert.That(StatsCollector.GcPauseRatio.Value, Is.GreaterThan(0));
-            Assert.That(StatsCollector.GcCpuRatio.Value, Is.GreaterThan(0));
+            Assert.That(StatsCollector.GcPauseRatio.Value, Is.GreaterThan(0.0).After(1000, 100), "GcPauseRatio");
+            
+            Assert.That(
+                () =>
+                {
+                    var val = StatsCollector.GcCpuRatio.Value;
+                    if (val > 0)
+                        return val;
+                    
+                    // To improve the reliability of the test, call UpdateMetrics here. Why? Process.TotalProcessorTime isn't very precise and this
+                    // can lead to CpuRation believing that no CPU has been consumed
+                    StatsCollector.UpdateMetrics();
+
+                    return 0;
+                }, 
+                Is.GreaterThan(0.0).After(1000, 1), 
+                "GcCpuRatio"
+            );
         }
 
         public class FinalizableTest

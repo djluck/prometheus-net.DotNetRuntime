@@ -15,7 +15,7 @@
         <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
-        <Version>$(PromMajorVersion).0.8-beta</Version>
+        <Version>$(PromMajorVersion).0.9-beta</Version>
         <Authors>James Luck</Authors>
         <PackageTags>Prometheus prometheus-net IOnDemandCollector runtime metrics gc jit threadpool contention stats</PackageTags>
         <PackageProjectUrl>https://github.com/djluck/prometheus-net.DotNetRuntime</PackageProjectUrl>
@@ -29,18 +29,19 @@
 
     <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
         <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <PropertyGroup Condition=" $(Configuration.StartsWith('Debug')) ">
         <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
         <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
     </PropertyGroup>
-
+    
     <ItemGroup Condition="$(PromMajorVersion) == '3'">
         <PackageReference Include="prometheus-net" Version="3.1.2" />
     </ItemGroup>
 
-    <ItemGroup Condition="$(PromMajorVersion) == '2'" >
+    <ItemGroup Condition="$(PromMajorVersion) == '2'">
         <PackageReference Include="prometheus-net" Version="2.1.3" />
     </ItemGroup>
 

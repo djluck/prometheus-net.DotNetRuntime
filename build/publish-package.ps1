@@ -24,7 +24,7 @@ function BuildAndPublishRelease(){
 	) 
 	
 	echo "Packing and publishing for v$promMajorVer.."
-	rm "$PSScriptRoot\nupkgs\*.*" 
+	rm "$PSScriptRoot\nupkgs\*.*" -ErrorAction Ignore
 
 	dotnet pack ..\src\prometheus-net.DotNetRuntime --include-symbols -c "ReleaseV$promMajorVer" --output "$PSScriptRoot\nupkgs"
 
@@ -32,13 +32,17 @@ function BuildAndPublishRelease(){
 		throw "Creating nuget package for V$promMajorVer failed, exiting.."
 	}
 
-	dotnet nuget push "$PSScriptRoot\nupkgs\prometheus-net.DotNetRuntime.$promMajorVer.*.symbols.nupkg" -k $nugetApiKey -s https://api.nuget.org/v3/index.json 
+	dotnet nuget push "$PSScriptRoot\nupkgs\prometheus-net.DotNetRuntime.$promMajorVer.*.symbols.nupkg" -k "$nugetApiKey" -s "https://api.nuget.org/v3/index.json" -n true
 
 	if ($LastExitCode -ne 0){
 		throw "pushing nuget package for V$promMajorVer failed, exiting.."
 	}
 }
 
+if (-not (Test-Path "$pwd\..\src")){
+	Write-Error "Must be in the .\build\ directory"
+	exit
+}
 	
 # Ensure tests are green for both versions before we continue
 TestRelease(2)

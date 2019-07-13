@@ -9,7 +9,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
     /// <summary>
     /// A strongly-typed cache that periodically evicts items.
     /// </summary>
-    internal sealed class Cache<TKey, TValue> : IDisposable
+    public sealed class Cache<TKey, TValue> : IDisposable
     {
         private readonly ConcurrentDictionary<TKey, CacheValue<TValue>> _cache;
         private readonly TimeSpan _expireItemsAfter;
@@ -101,7 +101,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
                     continue;
                 
                 if (value.AddedAt < earliestAddedTime)
-                    _cache.TryRemove(key, out value);
+                    _cache.TryRemove(key, out var _);
             }
         }
     }
