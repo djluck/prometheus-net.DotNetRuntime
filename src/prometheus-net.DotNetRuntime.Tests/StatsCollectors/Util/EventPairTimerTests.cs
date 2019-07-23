@@ -23,7 +23,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
         public void TryGetEventPairDuration_ignores_events_that_its_not_configured_to_look_for()
         {
             var nonMonitoredEvent = CreateEventWrittenEventArgs(3);
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(nonMonitoredEvent, out var duration), Is.False);
+            Assert.That(_eventPairTimer.TryGetDuration(nonMonitoredEvent, out var duration), Is.EqualTo(DurationResult.Unrecognized));
             Assert.That(duration, Is.EqualTo(TimeSpan.Zero));
         }
         
@@ -31,7 +31,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
         public void TryGetEventPairDuration_ignores_end_events_if_it_never_saw_the_start_event()
         {
             var nonMonitoredEvent = CreateEventWrittenEventArgs(EventIdEnd, payload: 1L);
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(nonMonitoredEvent, out var duration), Is.False);
+            Assert.That(_eventPairTimer.TryGetDuration(nonMonitoredEvent, out var duration),Is.EqualTo(DurationResult.FinalWithoutDuration));
             Assert.That(duration, Is.EqualTo(TimeSpan.Zero));
         }
         
@@ -41,11 +41,11 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
             // arrange
             var now = DateTime.UtcNow;
             var startEvent = CreateEventWrittenEventArgs(EventIdStart, now, payload: 1L);
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(startEvent, out var _), Is.False);
+            Assert.That(_eventPairTimer.TryGetDuration(startEvent, out var _), Is.EqualTo(DurationResult.Start));
             var endEvent = CreateEventWrittenEventArgs(EventIdEnd, now.AddMilliseconds(100), payload: 1L);
             
             // act
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(endEvent, out var duration), Is.True);
+            Assert.That(_eventPairTimer.TryGetDuration(endEvent, out var duration), Is.EqualTo(DurationResult.FinalWithDuration));
             Assert.That(duration.TotalMilliseconds, Is.EqualTo(100));
         }
         
@@ -55,11 +55,11 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
             // arrange
             var now = DateTime.UtcNow;
             var startEvent = CreateEventWrittenEventArgs(EventIdStart, now, payload: 1L);
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(startEvent, out var _), Is.False);
+            Assert.That(_eventPairTimer.TryGetDuration(startEvent, out var _), Is.EqualTo(DurationResult.Start));
             var endEvent = CreateEventWrittenEventArgs(EventIdEnd, now, payload: 1L);
             
             // act
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(endEvent, out var duration), Is.True);
+            Assert.That(_eventPairTimer.TryGetDuration(endEvent, out var duration), Is.EqualTo(DurationResult.FinalWithDuration));
             Assert.That(duration, Is.EqualTo(TimeSpan.Zero));
         }
         
@@ -75,14 +75,14 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
             var startEvent3 = CreateEventWrittenEventArgs(EventIdStart, now, payload: 3L);
             var endEvent3 = CreateEventWrittenEventArgs(EventIdEnd, now.AddMilliseconds(100), payload: 3L);
 
-            _eventPairTimer.TryGetEventPairDuration(startEvent1, out var _);
-            _eventPairTimer.TryGetEventPairDuration(startEvent2, out var _);
-            _eventPairTimer.TryGetEventPairDuration(startEvent3, out var _);
+            _eventPairTimer.TryGetDuration(startEvent1, out var _);
+            _eventPairTimer.TryGetDuration(startEvent2, out var _);
+            _eventPairTimer.TryGetDuration(startEvent3, out var _);
             
             // act
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(endEvent3, out var event3Duration), Is.True);
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(endEvent2, out var event2Duration), Is.True);
-            Assert.That(_eventPairTimer.TryGetEventPairDuration(endEvent1, out var event1Duration), Is.True);
+            Assert.That(_eventPairTimer.TryGetDuration(endEvent3, out var event3Duration), Is.EqualTo(DurationResult.FinalWithDuration));
+            Assert.That(_eventPairTimer.TryGetDuration(endEvent2, out var event2Duration), Is.EqualTo(DurationResult.FinalWithDuration));
+            Assert.That(_eventPairTimer.TryGetDuration(endEvent1, out var event1Duration), Is.EqualTo(DurationResult.FinalWithDuration));
             
             Assert.That(event1Duration.TotalMilliseconds, Is.EqualTo(300));
             Assert.That(event2Duration.TotalMilliseconds, Is.EqualTo(200));

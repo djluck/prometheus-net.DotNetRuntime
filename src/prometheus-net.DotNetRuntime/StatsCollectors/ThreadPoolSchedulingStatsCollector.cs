@@ -64,9 +64,9 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
                 ScheduledCount.Inc();
             }
             
-            if (_eventPairTimer.TryGetEventPairDuration(e, out var duration))
+            if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
             {
-                ScheduleDelay.Observe(duration.TotalSeconds);
+                ScheduleDelay.Observe(duration.TotalSeconds); // x 99?
             }   
         }
     }

@@ -50,7 +50,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {
-            if (_eventPairTimer.TryGetEventPairDuration(e, out var duration))
+            if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
             {
                 // dynamic methods are of special interest to us- only a certain number of JIT'd dynamic methods
                 // will be cached. Frequent use of dynamic can cause methods to be evicted from the cache and re-JIT'd

@@ -79,12 +79,7 @@ namespace Benchmarks
             {
                 eventArgs = (EventWrittenEventArgs)Activator.CreateInstance(typeof(EventWrittenEventArgs), BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.CreateInstance, (Binder) null, new object[] {null}, null);
             }
-            [Benchmark]
-            public bool TestEvent()
-            {
-                return timer.TryGetEventPairDuration(eventArgs, out var duration);
-            }
-
+          
         }
     }
 }

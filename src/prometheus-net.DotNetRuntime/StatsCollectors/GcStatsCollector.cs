@@ -148,7 +148,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
                 return;
             }
 
-            if (_gcPauseEventTimer.TryGetEventPairDuration(e, out var pauseDuration))
+            if (_gcPauseEventTimer.TryGetDuration(e, out var pauseDuration) == DurationResult.FinalWithDuration)
             {
                 GcPauseSeconds.Observe(pauseDuration.TotalSeconds);
                 return;
@@ -159,7 +159,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
                 GcCollectionReasons.Labels(_gcReasonToLabels[(DotNetRuntimeEventSource.GCReason) e.Payload[2]]).Inc();
             }
 
-            if (_gcEventTimer.TryGetEventPairDuration(e, out var gcDuration, out var gcData))
+            if (_gcEventTimer.TryGetDuration(e, out var gcDuration, out var gcData) == DurationResult.FinalWithDuration)
             {
                 GcCollectionSeconds.Labels(gcData.GetGenerationToString(), gcData.GetTypeToString()).Observe(gcDuration.TotalSeconds);
             }

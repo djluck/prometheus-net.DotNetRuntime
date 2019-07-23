@@ -40,7 +40,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {
-            if (_eventPairTimer.TryGetEventPairDuration(e, out var duration))
+            if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
             {
                 ContentionTotal.Inc();
                 ContentionSecondsTotal.Inc(duration.TotalSeconds);    
