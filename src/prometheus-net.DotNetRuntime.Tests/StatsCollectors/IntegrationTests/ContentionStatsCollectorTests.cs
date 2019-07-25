@@ -12,7 +12,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
     {
         protected override ContentionStatsCollector CreateStatsCollector()
         {
-            return new ContentionStatsCollector();
+            return new ContentionStatsCollector(SampleEvery.OneEvent);
         }
         
         [Test]

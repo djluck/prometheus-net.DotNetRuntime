@@ -19,18 +19,21 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         private readonly int _endEventId;
         private readonly Func<EventWrittenEventArgs, TId> _extractEventIdFn;
         private readonly Func<EventWrittenEventArgs, TEventData> _extractData;
+        private readonly SamplingRate _samplingRate;
 
         public EventPairTimer(
             int startEventId, 
             int endEventId, 
             Func<EventWrittenEventArgs, TId> extractEventIdFn, 
             Func<EventWrittenEventArgs, TEventData> extractData,
+            SamplingRate samplingRate,
             Cache<TId, EventDataWrapper> cache = null)
         {
             _startEventId = startEventId;
             _endEventId = endEventId;
             _extractEventIdFn = extractEventIdFn;
             _extractData = extractData;
+            _samplingRate = samplingRate;
             _eventStartedAtCache = cache ?? new Cache<TId, EventDataWrapper>(TimeSpan.FromMinutes(1));
         }
         
@@ -42,10 +45,20 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         /// If the event id matches the supplied start event id, then we cache the event until the final event occurs.
         /// All other events are ignored.
         /// </remarks>
-        public bool TryGetEventPairDuration(EventWrittenEventArgs e, out TimeSpan duration, out TEventData startEventData)
+        public DurationResult TryGetDuration(EventWrittenEventArgs e, out TimeSpan duration, out TEventData startEventData)
         {
             duration = TimeSpan.Zero;
             startEventData = default(TEventData);
+            
+            if (e.EventId == _startEventId)
+            {
+                if (_samplingRate.ShouldSampleEvent())
+                {
+                    _eventStartedAtCache.Set(_extractEventIdFn(e), new EventDataWrapper(_extractData(e), e.TimeStamp));
+                }
+
+                return DurationResult.Start;
+            }
             
             if (e.EventId == _endEventId)
             {
@@ -54,21 +67,15 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
                 {
                     startEventData = startEvent.Data;
                     duration = e.TimeStamp - startEvent.TimeStamp;
-                    return true;
+                    return DurationResult.FinalWithDuration;
                 }
                 else
                 {
-                    // TODO measure missing event
-                    return false;
+                    return DurationResult.FinalWithoutDuration;
                 }
             }
-            
-            if (e.EventId == _startEventId)
-            {
-                _eventStartedAtCache.Set(_extractEventIdFn(e), new EventDataWrapper(_extractData(e), e.TimeStamp));
-            }
 
-            return false;
+            return DurationResult.Unrecognized;
         }
 
         public struct EventDataWrapper
@@ -83,19 +90,26 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
             public DateTime TimeStamp { get; }
         }
     }
+
+    public enum DurationResult
+    {
+        Unrecognized = 0,
+        Start = 1,
+        FinalWithoutDuration = 2,
+        FinalWithDuration = 3
+    }
     
     public sealed class EventPairTimer<TId> : EventPairTimer<TId, int>
         where TId : struct
     {
-      
-        public EventPairTimer(int startEventId, int endEventId, Func<EventWrittenEventArgs, TId> extractEventIdFn, Cache<TId, EventDataWrapper> cache = null) 
-            : base(startEventId, endEventId, extractEventIdFn, e => 0, cache)
+        public EventPairTimer(int startEventId, int endEventId, Func<EventWrittenEventArgs, TId> extractEventIdFn, SamplingRate samplingRate, Cache<TId, EventDataWrapper> cache = null) 
+            : base(startEventId, endEventId, extractEventIdFn, e => 0, samplingRate, cache)
         {
         }
         
-        public bool TryGetEventPairDuration(EventWrittenEventArgs e, out TimeSpan duration)
+        public DurationResult TryGetDuration(EventWrittenEventArgs e, out TimeSpan duration)
         {
-            return TryGetEventPairDuration(e, out duration, out _);
+            return this.TryGetDuration(e, out duration, out _);
         }
     }
 }

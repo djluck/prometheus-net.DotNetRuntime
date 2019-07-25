@@ -71,7 +71,7 @@ namespace Benchmarks
             [MethodImpl(MethodImplOptions.NoOptimization)]
             public long TestInterlockedIncLong() => Interlocked.Increment(ref l1);
 	
-            private EventPairTimer<int> timer = new EventPairTimer<int>(1, 2, x => x.EventId);
+            private EventPairTimer<int> timer = new EventPairTimer<int>(1, 2, x => x.EventId, SampleEvery.OneEvent);
 
             private EventWrittenEventArgs eventArgs;
 
@@ -79,12 +79,7 @@ namespace Benchmarks
             {
                 eventArgs = (EventWrittenEventArgs)Activator.CreateInstance(typeof(EventWrittenEventArgs), BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.CreateInstance, (Binder) null, new object[] {null}, null);
             }
-            [Benchmark]
-            public bool TestEvent()
-            {
-                return timer.TryGetEventPairDuration(eventArgs, out var duration);
-            }
-
+          
         }
     }
 }

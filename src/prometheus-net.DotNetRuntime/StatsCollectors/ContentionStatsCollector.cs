@@ -18,8 +18,20 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
     /// </remarks>
     internal sealed class ContentionStatsCollector : IEventSourceStatsCollector
     {
+        private readonly SamplingRate _samplingRate;
         private const int EventIdContentionStart = 81, EventIdContentionStop = 91;
-        private readonly EventPairTimer<long> _eventPairTimer = new EventPairTimer<long>(EventIdContentionStart, EventIdContentionStop, x => x.OSThreadId);
+        private readonly EventPairTimer<long> _eventPairTimer; 
+
+        public ContentionStatsCollector(SamplingRate samplingRate)
+        {
+            _samplingRate = samplingRate;
+            _eventPairTimer = new EventPairTimer<long>(
+                EventIdContentionStart, 
+                EventIdContentionStop, 
+                x => x.OSThreadId, 
+                samplingRate
+            );
+        }
         
         public EventKeywords Keywords => (EventKeywords) DotNetRuntimeEventSource.Keywords.Contention;
         public EventLevel Level => EventLevel.Informational;
@@ -40,10 +52,10 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {
-            if (_eventPairTimer.TryGetEventPairDuration(e, out var duration))
+            if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
             {
-                ContentionTotal.Inc();
-                ContentionSecondsTotal.Inc(duration.TotalSeconds);    
+                ContentionTotal.Inc(_samplingRate.SampleEvery);
+                ContentionSecondsTotal.Inc(duration.TotalSeconds * _samplingRate.SampleEvery);    
             }
         }
     }

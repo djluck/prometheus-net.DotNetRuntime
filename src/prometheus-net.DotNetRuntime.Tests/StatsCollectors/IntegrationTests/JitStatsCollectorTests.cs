@@ -1,3 +1,6 @@
+using System;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using NUnit.Framework;
@@ -7,11 +10,11 @@ using Prometheus.DotNetRuntime.StatsCollectors;
 
 namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
 {
-    internal class JitStatsCollectorTests : StatsCollectorIntegrationTestBase<JitStatsCollector>
+    internal class Given_A_JitStatsCollector_That_Samples_Every_Jit_Event : StatsCollectorIntegrationTestBase<JitStatsCollector>
     {
         protected override JitStatsCollector CreateStatsCollector()
         {
-            return new JitStatsCollector();
+            return new JitStatsCollector(SampleEvery.OneEvent);
         }
 
         [Test]
@@ -66,6 +69,39 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         {
             dynamic o = "string";
             return o.Length;
+        }
+    }
+    
+    internal class Given_A_JitStatsCollector_That_Samples_Every_Fifth_Jit_Event : StatsCollectorIntegrationTestBase<JitStatsCollector>
+    {
+        protected override JitStatsCollector CreateStatsCollector()
+        {
+            return new JitStatsCollector(SampleEvery.FiveEvents);
+        }
+
+        [Test]
+        public void When_many_methods_are_jitted_then_their_compilation_is_measured()
+        {
+            // arrange
+            var methodsJitted = StatsCollector.MethodsJittedTotal.Labels("true").Value;
+            var methodsJittedSeconds = StatsCollector.MethodsJittedSecondsTotal.Labels("true").Value;
+            
+            // act
+            var sp = Stopwatch.StartNew();
+            Compile100Methods(() => 1);
+            sp.Stop();
+            
+            // assert
+            Assert.That(() => StatsCollector.MethodsJittedTotal.Labels("true").Value, Is.GreaterThanOrEqualTo(methodsJitted + 20).After(100, 10));
+            Assert.That(StatsCollector.MethodsJittedSecondsTotal.Labels("true").Value, Is.GreaterThan(methodsJittedSeconds + sp.Elapsed.TotalSeconds).Within(0.1));
+        }
+
+        private void Compile100Methods(Expression<Func<int>> toCompile)
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                toCompile.Compile();
+            }
         }
     }
 }

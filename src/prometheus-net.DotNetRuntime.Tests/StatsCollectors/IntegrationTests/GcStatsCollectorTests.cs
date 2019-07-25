@@ -99,8 +99,12 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
                     if (val > 0)
                         return val;
                     
-                    // To improve the reliability of the test, call UpdateMetrics here. Why? Process.TotalProcessorTime isn't very precise and this
+                    // To improve the reliability of the test, do some CPU busy work + call UpdateMetrics here. Why? Process.TotalProcessorTime isn't very precise and this
                     // can lead to CpuRation believing that no CPU has been consumed
+                    for (int i = 0; i < 10_000; i++)
+                    {
+                    }
+
                     StatsCollector.UpdateMetrics();
 
                     return 0;

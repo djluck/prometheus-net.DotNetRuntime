@@ -33,13 +33,15 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
             EventIdGcStart,
             EventIdGcStop,
             x => (uint) x.Payload[0],
-            x => new GcData((uint) x.Payload[1], (DotNetRuntimeEventSource.GCType) x.Payload[3]));
+            x => new GcData((uint) x.Payload[1], (DotNetRuntimeEventSource.GCType) x.Payload[3]),
+            SampleEvery.OneEvent);
 
         private readonly EventPairTimer<int> _gcPauseEventTimer = new EventPairTimer<int>(
             EventIdSuspendEEStart,
             EventIdRestartEEStop,
             // Suspensions/ Resumptions are always done sequentially so there is no common value to match events on. Return a constant value as the event id.
-            x => 1);
+            x => 1,
+            SampleEvery.OneEvent);
 
         private readonly Dictionary<DotNetRuntimeEventSource.GCReason, string> _gcReasonToLabels = LabelGenerator.MapEnumToLabelValues<DotNetRuntimeEventSource.GCReason>();
         private readonly Ratio _gcCpuRatio = Ratio.ProcessTotalCpu();
@@ -148,7 +150,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
                 return;
             }
 
-            if (_gcPauseEventTimer.TryGetEventPairDuration(e, out var pauseDuration))
+            if (_gcPauseEventTimer.TryGetDuration(e, out var pauseDuration) == DurationResult.FinalWithDuration)
             {
                 GcPauseSeconds.Observe(pauseDuration.TotalSeconds);
                 return;
@@ -159,7 +161,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
                 GcCollectionReasons.Labels(_gcReasonToLabels[(DotNetRuntimeEventSource.GCReason) e.Payload[2]]).Inc();
             }
 
-            if (_gcEventTimer.TryGetEventPairDuration(e, out var gcDuration, out var gcData))
+            if (_gcEventTimer.TryGetDuration(e, out var gcDuration, out var gcData) == DurationResult.FinalWithDuration)
             {
                 GcCollectionSeconds.Labels(gcData.GetGenerationToString(), gcData.GetTypeToString()).Observe(gcDuration.TotalSeconds);
             }

@@ -3,12 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
 #if PROMV2
 using Prometheus.Advanced;
 using Prometheus.Advanced.DataContracts;
-#endif
 
+#endif
 
 namespace Prometheus.DotNetRuntime
 {
@@ -29,7 +28,7 @@ namespace Prometheus.DotNetRuntime
         {
             return CollectAllMetrics(counter, excludeUnlabeled).Select(x => x.counter.value);
         }
-        
+
         /// <summary>
         /// Collects all sum values of a histogram recorded across both unlabeled and labeled metrics.
         /// </summary>
@@ -37,7 +36,7 @@ namespace Prometheus.DotNetRuntime
         {
             return CollectAllMetrics(histogram, excludeUnlabeled).Select(x => x.histogram.sample_sum);
         }
-        
+
         /// <summary>
         /// Collects all count values of a histogram recorded across both unlabeled and labeled metrics.
         /// </summary>
@@ -45,10 +44,17 @@ namespace Prometheus.DotNetRuntime
         {
             return CollectAllMetrics(histogram).Select(x => x.histogram.sample_count);
         }
-        
+
         internal static IEnumerable<Metric> CollectAllMetrics(this ICollector collector, bool excludeUnlabeled = false)
         {
             return collector.Collect().Single().metric.Where(x => !excludeUnlabeled || x.label.Count > 0);
+        }
+
+        internal static void Observe(this Histogram h, double val, int samples)
+        {
+            // Ugly hack for V2 :(
+            for (int i = 0; i < samples; i++)
+                h.Observe(val);
         }
 #endif
 

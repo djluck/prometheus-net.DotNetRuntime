@@ -15,18 +15,26 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
     /// </summary>
     internal sealed class JitStatsCollector : IEventSourceStatsCollector
     {
+        private readonly SamplingRate _samplingRate;
         private const int EventIdMethodJittingStarted = 145, EventIdMethodLoadVerbose = 143;
         private const string DynamicLabel = "dynamic";
         private const string LabelValueTrue = "true";
         private const string LabelValueFalse = "false";
 
-        private readonly EventPairTimer<ulong> _eventPairTimer = new EventPairTimer<ulong>(
-            EventIdMethodJittingStarted, 
-            EventIdMethodLoadVerbose, 
-            x => (ulong) x.Payload[0]
-        );
+        private readonly EventPairTimer<ulong> _eventPairTimer;
 
         private readonly Ratio _jitCpuRatio = Ratio.ProcessTotalCpu();
+
+        public JitStatsCollector(SamplingRate samplingRate)
+        {
+            _samplingRate = samplingRate;
+            _eventPairTimer = new EventPairTimer<ulong>(
+                EventIdMethodJittingStarted,
+                EventIdMethodLoadVerbose,
+                x => (ulong)x.Payload[0],
+                samplingRate
+            );
+        }
        
         public EventKeywords Keywords => (EventKeywords) DotNetRuntimeEventSource.Keywords.Jit;
         public EventLevel Level => EventLevel.Verbose;
@@ -50,15 +58,15 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {
-            if (_eventPairTimer.TryGetEventPairDuration(e, out var duration))
+            if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
             {
                 // dynamic methods are of special interest to us- only a certain number of JIT'd dynamic methods
                 // will be cached. Frequent use of dynamic can cause methods to be evicted from the cache and re-JIT'd
                 var methodFlags = (uint)e.Payload[5];
                 var dynamicLabelValue = (methodFlags & 0x1) == 0x1 ? LabelValueTrue : LabelValueFalse;
                 
-                MethodsJittedTotal.Labels(dynamicLabelValue).Inc();
-                MethodsJittedSecondsTotal.Labels(dynamicLabelValue).Inc(duration.TotalSeconds);
+                MethodsJittedTotal.Labels(dynamicLabelValue).Inc(_samplingRate.SampleEvery);
+                MethodsJittedSecondsTotal.Labels(dynamicLabelValue).Inc(duration.TotalSeconds * _samplingRate.SampleEvery);
             }
         }
     }
