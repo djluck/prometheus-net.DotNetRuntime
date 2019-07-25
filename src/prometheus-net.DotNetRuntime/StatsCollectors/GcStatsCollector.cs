@@ -33,13 +33,15 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
             EventIdGcStart,
             EventIdGcStop,
             x => (uint) x.Payload[0],
-            x => new GcData((uint) x.Payload[1], (DotNetRuntimeEventSource.GCType) x.Payload[3]));
+            x => new GcData((uint) x.Payload[1], (DotNetRuntimeEventSource.GCType) x.Payload[3]),
+            SampleEvery.OneEvent);
 
         private readonly EventPairTimer<int> _gcPauseEventTimer = new EventPairTimer<int>(
             EventIdSuspendEEStart,
             EventIdRestartEEStop,
             // Suspensions/ Resumptions are always done sequentially so there is no common value to match events on. Return a constant value as the event id.
-            x => 1);
+            x => 1,
+            SampleEvery.OneEvent);
 
         private readonly Dictionary<DotNetRuntimeEventSource.GCReason, string> _gcReasonToLabels = LabelGenerator.MapEnumToLabelValues<DotNetRuntimeEventSource.GCReason>();
         private readonly Ratio _gcCpuRatio = Ratio.ProcessTotalCpu();

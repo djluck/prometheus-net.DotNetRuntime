@@ -16,20 +16,24 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
     {
         private const int EventIdThreadPoolEnqueueWork = 30, EventIdThreadPoolDequeueWork = 31;
         private readonly double[] _histogramBuckets;
-        
-        private readonly EventPairTimer<long> _eventPairTimer = new EventPairTimer<long>(
-            EventIdThreadPoolEnqueueWork, 
-            EventIdThreadPoolDequeueWork, 
-            x => (long)x.Payload[0],
-            new Cache<long, EventPairTimer<long, int>.EventDataWrapper>(TimeSpan.FromSeconds(30), initialCapacity: 512)
-        );
+        private readonly SamplingRate _samplingRate;
 
-        public ThreadPoolSchedulingStatsCollector(double[] histogramBuckets)
+        private readonly EventPairTimer<long> _eventPairTimer;
+
+        public ThreadPoolSchedulingStatsCollector(double[] histogramBuckets, SamplingRate samplingRate)
         {
             _histogramBuckets = histogramBuckets;
+            _samplingRate = samplingRate;
+            _eventPairTimer  = new EventPairTimer<long>(
+                EventIdThreadPoolEnqueueWork, 
+                EventIdThreadPoolDequeueWork, 
+                x => (long)x.Payload[0],
+                samplingRate,
+                new Cache<long, EventPairTimer<long, int>.EventDataWrapper>(TimeSpan.FromSeconds(30), initialCapacity: 512)
+            );
         }
 
-        public ThreadPoolSchedulingStatsCollector(): this(Constants.DefaultHistogramBuckets)
+        internal ThreadPoolSchedulingStatsCollector(): this(Constants.DefaultHistogramBuckets, SampleEvery.OneEvent)
         {
         }
 
@@ -66,7 +70,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
             
             if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
             {
-                ScheduleDelay.Observe(duration.TotalSeconds); // x 99?
+                ScheduleDelay.Observe(duration.TotalSeconds, _samplingRate.SampleEvery);
             }   
         }
     }
