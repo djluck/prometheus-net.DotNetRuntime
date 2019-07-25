@@ -53,7 +53,7 @@ The harder you work the .NET core runtime, the more events it generates. Event g
 
 ### Sampling
 To counteract some of the performance impacts of measuring .NET core runtime events, sampling can be configured on supported collectors:
-```
+```csharp
 IDisposable collector = DotNetRuntimeStatsBuilder.Customize()
 	// Only 1 in 10 contention events will be sampled 
 	.WithContentionStats(sampleRate: SampleEvery.TenEvents)
@@ -65,11 +65,12 @@ IDisposable collector = DotNetRuntimeStatsBuilder.Customize()
 ```
 
 The default sample rates are listed below:
-Event collector                | Default sample rate
------------------------------- | -------------------
-`ThreadPoolSchedulingStats`    | `SampleEvery.TenEvents`
-`JitStats`				       | `SampleEvery.TenEvents`
-`ContentionStats`			   | `SampleEvery.TwoEvents`
+
+| Event collector                | Default sample rate     |
+| ------------------------------ | ------------------------|
+| `ThreadPoolSchedulingStats`    | `SampleEvery.TenEvents` |
+| `JitStats`                     | `SampleEvery.TenEvents` |
+| `ContentionStats`              | `SampleEvery.TwoEvents` |
 
 While the default sampling rates provide a decent balance between accuracy and resource consumption if you're concerned with the accuracy of metrics at all costs, 
 then feel free to change the sampling rate to `SampleEvery.OneEvent`. If minimal resource consumption (especially memory), is your goal you might like to 
