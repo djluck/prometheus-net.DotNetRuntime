@@ -17,11 +17,13 @@ namespace Prometheus.DotNetRuntime
     {
         private DotNetEventListener[] _eventListeners;
         private readonly ImmutableHashSet<IEventSourceStatsCollector> _statsCollectors;
+        private readonly bool _enabledDebugging;
         private readonly Action<Exception> _errorHandler;
 
-        internal DotNetRuntimeStatsCollector(ImmutableHashSet<IEventSourceStatsCollector> statsCollectors, Action<Exception> errorHandler)
+        internal DotNetRuntimeStatsCollector(ImmutableHashSet<IEventSourceStatsCollector> statsCollectors, Action<Exception> errorHandler, bool enabledDebugging)
         {
             _statsCollectors = statsCollectors;
+            _enabledDebugging = enabledDebugging;
             _errorHandler = errorHandler ?? (e => { });
             Instance = this;
         }
@@ -50,7 +52,7 @@ namespace Prometheus.DotNetRuntime
             
             // Metrics have been registered, start the event listeners
             _eventListeners = _statsCollectors
-                .Select(sc => new DotNetEventListener(sc, _errorHandler))
+                .Select(sc => new DotNetEventListener(sc, _errorHandler, _enabledDebugging))
                 .ToArray();
         }
 

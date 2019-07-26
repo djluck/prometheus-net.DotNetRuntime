@@ -75,7 +75,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             Assert.That(() => StatsCollector.GcCollectionSeconds.CollectAllCountValues().Count(), Is.GreaterThanOrEqualTo(1).After(500, 10)); // at least 3 generations
             Assert.That(() => StatsCollector.GcCollectionSeconds.CollectAllSumValues(excludeUnlabeled: true), Is.All.GreaterThan(0));
             Assert.That(() => StatsCollector.GcCollectionReasons.CollectAllValues(excludeUnlabeled: true), Is.All.GreaterThan(0));
-            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllSumValues().Single(), Is.GreaterThan(0).After(200, 10));
+            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllSumValues().Single(), Is.GreaterThan(0).After(500, 10));
         }
 
         [Test]
@@ -84,34 +84,22 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             // arrange
             GC.Collect(2, GCCollectionMode.Forced, true, true);
 
-            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllCountValues().First(), Is.GreaterThan(0).After(2000, 100));
+            Assert.That(() => StatsCollector.GcPauseSeconds.CollectAllCountValues().First(), Is.GreaterThan(0).After(2000, 10));
+            Assert.That(()=> StatsCollector.GcCollectionSeconds.CollectAllSumValues().Sum(x => x), Is.GreaterThan(0).After(2000, 10));
+            
+            // To improve the reliability of the test, do some CPU busy work + call UpdateMetrics here.
+            // Why? Process.TotalProcessorTime isn't very precise (it's not updated after every small bit of CPU consumption)
+            // and this can lead to CpuRatio believing that no CPU has been consumed
+            long i = 2_000_000_000;
+            while (i > 0)
+                i--;
 
             // act 
             StatsCollector.UpdateMetrics();
             
             // assert
-            Assert.That(StatsCollector.GcPauseRatio.Value, Is.GreaterThan(0.0).After(1000, 100), "GcPauseRatio");
-            
-            Assert.That(
-                () =>
-                {
-                    var val = StatsCollector.GcCpuRatio.Value;
-                    if (val > 0)
-                        return val;
-                    
-                    // To improve the reliability of the test, do some CPU busy work + call UpdateMetrics here. Why? Process.TotalProcessorTime isn't very precise and this
-                    // can lead to CpuRation believing that no CPU has been consumed
-                    for (int i = 0; i < 10_000; i++)
-                    {
-                    }
-
-                    StatsCollector.UpdateMetrics();
-
-                    return 0;
-                }, 
-                Is.GreaterThan(0.0).After(1000, 1), 
-                "GcCpuRatio"
-            );
+            Assert.That(StatsCollector.GcPauseRatio.Value, Is.GreaterThan(0.0).After(1000, 1), "GcPauseRatio");
+            Assert.That(StatsCollector.GcCpuRatio.Value, Is.GreaterThan(0.0).After(1000, 1), "GcCpuRatio");
         }
 
         public class FinalizableTest

@@ -45,6 +45,7 @@ namespace Prometheus.DotNetRuntime
         public class Builder
         {
             private Action<Exception> _errorHandler;
+            private bool _debugMetrics;
             internal HashSet<IEventSourceStatsCollector> StatsCollectors { get; } = new HashSet<IEventSourceStatsCollector>(new TypeEquality<IEventSourceStatsCollector>());
             
             /// <summary>
@@ -59,7 +60,7 @@ namespace Prometheus.DotNetRuntime
                     throw new InvalidOperationException(".NET runtime metrics are already being collected. Dispose() of your previous collector before calling this method again.");
                 }
                 
-                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler);
+                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler, _debugMetrics);
 #if PROMV2
                 DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(runtimeStatsCollector);
 #elif PROMV3
@@ -151,6 +152,23 @@ namespace Prometheus.DotNetRuntime
             public Builder WithErrorHandler(Action<Exception> handler)
             {
                 _errorHandler = handler;
+                return this;
+            }
+
+            /// <summary>
+            /// Include additional debugging metrics. Should NOT be used in production unless debugging
+            /// perf issues.
+            /// </summary>
+            /// <remarks>
+            /// Enabling debugging will emit two metrics:
+            /// 1. dotnet_debug_events_total - tracks the volume of events being processed by each stats collector
+            /// 2. dotnet_debug_cpu_seconds_total - tracks (roughly) the amount of CPU consumed by each stats collector.  
+            /// </remarks>
+            /// <param name="generateDebugMetrics"></param>
+            /// <returns></returns>
+            public Builder WithDebuggingMetrics(bool generateDebugMetrics)
+            {
+                _debugMetrics = generateDebugMetrics;
                 return this;
             }
             

@@ -29,7 +29,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
                 EventIdThreadPoolDequeueWork, 
                 x => (long)x.Payload[0],
                 samplingRate,
-                new Cache<long, EventPairTimer<long, int>.EventDataWrapper>(TimeSpan.FromSeconds(30), initialCapacity: 512)
+                new Cache<long, int>(TimeSpan.FromSeconds(30), initialCapacity: 512)
             );
         }
 
@@ -63,15 +63,19 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         
         public void ProcessEvent(EventWrittenEventArgs e)
         {
-            if (e.EventId == EventIdThreadPoolEnqueueWork)
+            switch (_eventPairTimer.TryGetDuration(e, out var duration))
             {
-                ScheduledCount.Inc();
+                case DurationResult.Start:
+                    ScheduledCount.Inc();
+                    return;
+                
+                case DurationResult.FinalWithDuration:
+                    ScheduleDelay.Observe(duration.TotalSeconds, _samplingRate.SampleEvery);
+                    return;
+                
+                default:
+                    return;
             }
-            
-            if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
-            {
-                ScheduleDelay.Observe(duration.TotalSeconds, _samplingRate.SampleEvery);
-            }   
         }
     }
 }

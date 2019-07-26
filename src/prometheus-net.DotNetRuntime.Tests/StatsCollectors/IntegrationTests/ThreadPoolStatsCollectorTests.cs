@@ -35,7 +35,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             // need to schedule a bunch of IO work to make the IO pool grow
             using (var client = new HttpClient())
             {
-                var httpTasks = Enumerable.Range(1, 30)
+                var httpTasks = Enumerable.Range(1, 50)
                     .Select(_ => client.GetAsync("http://google.com"));
 
                 await Task.WhenAll(httpTasks);

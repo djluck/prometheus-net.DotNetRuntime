@@ -17,40 +17,10 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
 
             foreach (var v in Enum.GetValues(typeof(TEnum)).Cast<TEnum>())
             {
-                dict.Add(v, ToSnakeCase(Enum.GetName(typeof(TEnum), v)));
+                dict.Add(v, Enum.GetName(typeof(TEnum), v).ToSnakeCase());
             }
 
             return dict;
-        }
-
-        private static string ToSnakeCase(string str)
-        {
-            var sb = new StringBuilder();
-            bool lastCharWasUpper = false;
-            bool isFirst = true;
-            
-            foreach (var c in str)
-            {
-                if (char.IsUpper(c))
-                {
-                    if (!lastCharWasUpper && !isFirst)
-                    {
-                        sb.Append("_");
-                    }
-
-                    sb.Append(char.ToLower(c));
-                    lastCharWasUpper = true;
-                }
-                else
-                {
-                    sb.Append(c);
-                    lastCharWasUpper = false;
-                }
-
-                isFirst = false;
-            }
-
-            return sb.ToString();
         }
     }
 }

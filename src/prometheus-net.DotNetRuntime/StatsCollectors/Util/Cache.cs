@@ -35,9 +35,9 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
             });
         }
         
-        internal void Set(TKey key, TValue value)
+        internal void Set(TKey key, TValue value, DateTime? timeStamp = null)
         {
-            var cacheValue = new CacheValue<TValue>(value);
+            var cacheValue = new CacheValue<TValue>(value, timeStamp);
             if (_cache.TryAdd(key, cacheValue))
                 return;
 
@@ -47,41 +47,45 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
             _cache.TryAdd(key, cacheValue);
         }
         
-        internal bool TryGetValue(TKey key, out TValue value)
+        internal bool TryGetValue(TKey key, out TValue value, out DateTime timeStamp)
         {
             CacheValue<TValue> cacheValue;
             if (_cache.TryGetValue(key, out cacheValue))
             {
                 value = cacheValue.Value;
+                timeStamp = cacheValue.TimeStamp;
                 return true;
             }
             
             value = default(TValue);
+            timeStamp = default(DateTime);
             return false;
         }
         
-        internal bool TryRemove(TKey key, out TValue value)
+        internal bool TryRemove(TKey key, out TValue value, out DateTime timeStamp)
         {
             CacheValue<TValue> cacheValue;
             if (_cache.TryRemove(key, out cacheValue))
             {
                 value = cacheValue.Value;
+                timeStamp = cacheValue.TimeStamp;
                 return true;
             }
             
             value = default(TValue);
+            timeStamp = default(DateTime);
             return false;
         }
         
         internal struct CacheValue<T>
         {
-            public CacheValue(T value)
+            public CacheValue(T value, DateTime? timeStamp)
             {
                 Value = value;
-                AddedAt = DateTime.UtcNow;
+                TimeStamp = timeStamp ?? DateTime.UtcNow;
             }
             
-            public DateTime AddedAt { get; }
+            public DateTime TimeStamp { get; }
             public T Value { get; }
         }
 
@@ -100,7 +104,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
                 if (!_cache.TryGetValue(key, out value))
                     continue;
                 
-                if (value.AddedAt < earliestAddedTime)
+                if (value.TimeStamp < earliestAddedTime)
                     _cache.TryRemove(key, out var _);
             }
         }

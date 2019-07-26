@@ -29,7 +29,11 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         public static Ratio ProcessTotalCpu()
         {
             var p = Process.GetCurrentProcess();
-            return new Ratio(() => p.TotalProcessorTime);
+            return new Ratio(() =>
+            {
+                p.Refresh();
+                return p.TotalProcessorTime;
+            });
         }
         
         /// <summary>
