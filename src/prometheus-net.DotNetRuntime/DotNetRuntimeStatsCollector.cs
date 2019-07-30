@@ -19,13 +19,18 @@ namespace Prometheus.DotNetRuntime
         private readonly ImmutableHashSet<IEventSourceStatsCollector> _statsCollectors;
         private readonly bool _enabledDebugging;
         private readonly Action<Exception> _errorHandler;
+        private readonly bool _isDefaultInstance;
 
-        internal DotNetRuntimeStatsCollector(ImmutableHashSet<IEventSourceStatsCollector> statsCollectors, Action<Exception> errorHandler, bool enabledDebugging)
+        internal DotNetRuntimeStatsCollector(ImmutableHashSet<IEventSourceStatsCollector> statsCollectors, Action<Exception> errorHandler, bool enabledDebugging, bool isDefaultInstance)
         {
             _statsCollectors = statsCollectors;
             _enabledDebugging = enabledDebugging;
             _errorHandler = errorHandler ?? (e => { });
-            Instance = this;
+            if (isDefaultInstance)
+            {
+                _isDefaultInstance = true;
+                Instance = this;
+            }
         }
         
         internal static DotNetRuntimeStatsCollector Instance { get; private set; }
@@ -83,7 +88,10 @@ namespace Prometheus.DotNetRuntime
             }
             finally
             {
-                Instance = null;
+                if (_isDefaultInstance)
+                {
+                    Instance = null;
+                }
             }
         }
     }

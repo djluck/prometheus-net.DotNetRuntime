@@ -73,5 +73,27 @@ namespace Prometheus.DotNetRuntime.Tests
             {
             }
         }
+
+        [Test]
+        public void StartCollecting_Allows_Multiple_Collectors_For_Non_Default_Registries()
+        {
+#if PROMV2
+            var registry1 = new DefaultCollectorRegistry();
+            var registry2 = new DefaultCollectorRegistry();
+#elif PROMV3
+            var registry1 = Metrics.NewCustomRegistry();
+            var registry2 = Metrics.NewCustomRegistry();
+#endif
+
+            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
+            {
+                using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
+                {
+                    using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
+                    {
+                    }
+                }
+            }
+        }
     }
 }
