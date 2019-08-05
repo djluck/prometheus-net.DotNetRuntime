@@ -4,6 +4,9 @@ using System.Collections.Immutable;
 using System.Linq;
 #if PROMV2
 using Prometheus.Advanced;
+using TCollectorRegistry = Prometheus.Advanced.ICollectorRegistry;
+#elif PROMV3
+using TCollectorRegistry = Prometheus.CollectorRegistry;
 #endif
 using Prometheus.DotNetRuntime.StatsCollectors;
 
@@ -19,29 +22,29 @@ namespace Prometheus.DotNetRuntime
         private readonly ImmutableHashSet<IEventSourceStatsCollector> _statsCollectors;
         private readonly bool _enabledDebugging;
         private readonly Action<Exception> _errorHandler;
-        private readonly bool _isDefaultInstance;
+        private readonly TCollectorRegistry _registry;
+        private readonly object _lockInstance = new object();
 
-        internal DotNetRuntimeStatsCollector(ImmutableHashSet<IEventSourceStatsCollector> statsCollectors, Action<Exception> errorHandler, bool enabledDebugging, bool isDefaultInstance)
+        internal DotNetRuntimeStatsCollector(ImmutableHashSet<IEventSourceStatsCollector> statsCollectors, Action<Exception> errorHandler, bool enabledDebugging, TCollectorRegistry registry)
         {
             _statsCollectors = statsCollectors;
             _enabledDebugging = enabledDebugging;
             _errorHandler = errorHandler ?? (e => { });
-            if (isDefaultInstance)
+            _registry = registry;
+            lock (_lockInstance)
             {
-                _isDefaultInstance = true;
-                Instance = this;
+                if (Instance.ContainsKey(registry))
+                {
+                    throw new InvalidOperationException(".NET runtime metrics are already being collected. Dispose() of your previous collector before calling this method again.");
+                }
+
+                Instance.Add(registry, this);
             }
         }
-        
-        internal static DotNetRuntimeStatsCollector Instance { get; private set; }
 
-        public void RegisterMetrics(
-#if PROMV2
-            ICollectorRegistry registry
-#elif PROMV3
-            CollectorRegistry registry
-#endif
-        )
+        internal static Dictionary<TCollectorRegistry, DotNetRuntimeStatsCollector> Instance { get; private set; } = new Dictionary<TCollectorRegistry, DotNetRuntimeStatsCollector>();
+
+        public void RegisterMetrics(TCollectorRegistry registry)
         {
             
 #if PROMV2
@@ -88,9 +91,9 @@ namespace Prometheus.DotNetRuntime
             }
             finally
             {
-                if (_isDefaultInstance)
+                lock (_lockInstance)
                 {
-                    Instance = null;
+                    Instance.Remove(_registry);
                 }
             }
         }

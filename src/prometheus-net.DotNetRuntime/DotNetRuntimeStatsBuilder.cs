@@ -5,9 +5,6 @@ using System.Diagnostics.Tracing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-#if PROMV2
-using Prometheus.Advanced;
-#endif
 using Prometheus.DotNetRuntime.StatsCollectors;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 #if PROMV2
@@ -65,9 +62,9 @@ namespace Prometheus.DotNetRuntime
             public IDisposable StartCollecting()
             {
 #if PROMV2
-                return StartCollecting(TCollectorRegistry.Instance, registryIsDefault: true);
+                return StartCollecting(TCollectorRegistry.Instance);
 #elif PROMV3
-                return StartCollecting(Metrics.DefaultRegistry, registryIsDefault: true);
+                return StartCollecting(Metrics.DefaultRegistry);
 #endif
             }
 
@@ -79,17 +76,7 @@ namespace Prometheus.DotNetRuntime
             /// <returns></returns>
             public IDisposable StartCollecting(TCollectorRegistry registry)
             {
-                return StartCollecting(registry, registryIsDefault: false);
-            }
-
-            private IDisposable StartCollecting(TCollectorRegistry registry, bool registryIsDefault)
-            {
-                if (registryIsDefault && DotNetRuntimeStatsCollector.Instance != null)
-                {
-                    throw new InvalidOperationException(".NET runtime metrics are already being collected. Dispose() of your previous collector before calling this method again.");
-                }
-
-                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler, _debugMetrics, isDefaultInstance: registryIsDefault);
+                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler, _debugMetrics, registry);
 #if PROMV2
                 registry.RegisterOnDemandCollectors(runtimeStatsCollector);
 #elif PROMV3

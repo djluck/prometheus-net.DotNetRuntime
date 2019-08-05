@@ -75,7 +75,7 @@ namespace Prometheus.DotNetRuntime.Tests
         }
 
         [Test]
-        public void StartCollecting_Allows_Multiple_Collectors_For_Non_Default_Registries()
+        public void StartCollecting_Does_Not_Allow_Two_Collectors_To_Run_Simultaneously_For_Each_Registry_Instance()
         {
 #if PROMV2
             var registry1 = new DefaultCollectorRegistry();
@@ -87,11 +87,51 @@ namespace Prometheus.DotNetRuntime.Tests
 
             using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
             {
+                Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
                 using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
                 {
+                    Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
+                    Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1));
                     using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
                     {
+                        Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
+                        Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1));
+                        Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2));
                     }
+                    Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
+                    Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1));
+                }
+                Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
+            }
+        }
+
+        [Test]
+        public void StartCollecting_Allows_A_New_Collector_To_Run_After_Disposing_Previous_Collector_For_Each_Registry_Instance()
+        {
+#if PROMV2
+            var registry1 = new DefaultCollectorRegistry();
+            var registry2 = new DefaultCollectorRegistry();
+#elif PROMV3
+            var registry1 = Metrics.NewCustomRegistry();
+            var registry2 = Metrics.NewCustomRegistry();
+#endif
+            
+            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
+            {
+                using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
+                {
+                }
+                using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
+                {
+                }
+            }
+            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
+            {
+                using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
+                {
+                }
+                using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
+                {
                 }
             }
         }
