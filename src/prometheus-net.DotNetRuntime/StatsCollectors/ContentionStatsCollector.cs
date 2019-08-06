@@ -20,23 +20,23 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
     {
         private readonly SamplingRate _samplingRate;
         private const int EventIdContentionStart = 81, EventIdContentionStop = 91;
-        private readonly EventPairTimer<long> _eventPairTimer; 
+        private readonly EventPairTimer<long> _eventPairTimer;
 
         public ContentionStatsCollector(SamplingRate samplingRate)
         {
             _samplingRate = samplingRate;
             _eventPairTimer = new EventPairTimer<long>(
-                EventIdContentionStart, 
-                EventIdContentionStop, 
-                x => x.OSThreadId, 
+                EventIdContentionStart,
+                EventIdContentionStop,
+                x => x.OSThreadId,
                 samplingRate
             );
         }
-        
-        public EventKeywords Keywords => (EventKeywords) DotNetRuntimeEventSource.Keywords.Contention;
+
+        public EventKeywords Keywords => (EventKeywords)DotNetRuntimeEventSource.Keywords.Contention;
         public EventLevel Level => EventLevel.Informational;
         public Guid EventSourceGuid => DotNetRuntimeEventSource.Id;
-        
+
         internal Counter ContentionSecondsTotal { get; private set; }
         internal Counter ContentionTotal { get; private set; }
 
@@ -52,10 +52,18 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {
-            if (_eventPairTimer.TryGetDuration(e, out var duration) == DurationResult.FinalWithDuration)
+            switch (_eventPairTimer.TryGetDuration(e, out var duration))
             {
-                ContentionTotal.Inc(_samplingRate.SampleEvery);
-                ContentionSecondsTotal.Inc(duration.TotalSeconds * _samplingRate.SampleEvery);    
+                case DurationResult.Start:
+                    ContentionTotal.Inc();
+                    return;
+                
+                case DurationResult.FinalWithDuration:
+                    ContentionSecondsTotal.Inc(duration.TotalSeconds * _samplingRate.SampleEvery);
+                    return;
+
+                default:
+                    return;
             }
         }
     }
