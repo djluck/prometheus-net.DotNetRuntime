@@ -18,10 +18,10 @@ These metrics are essential for understanding the peformance of any non-trivial 
 Add the packge from [nuget](https://www.nuget.org/packages/prometheus-net.DotNetRuntime):
 ```powershell
 # If you're using v2 of prometheus-net
-dotnet add package prometheus-net.DotNetRuntime --version 2.1.1-beta
+dotnet add package prometheus-net.DotNetRuntime --version 2.2.0-beta
 
 # If you're using v3 of prometheus-net
-dotnet add package prometheus-net.DotNetRuntime --version 3.1.1-beta
+dotnet add package prometheus-net.DotNetRuntime --version 3.2.0-beta
 ```
 
 And then start the collector:
@@ -42,7 +42,7 @@ IDisposable collector = DotNetRuntimeStatsBuilder.Customize()
 
 Once the collector is registered, you should see metrics prefixed with `dotnet_` visible in your metric output (make sure you are [exporting your metrics](https://github.com/prometheus-net/prometheus-net#http-handler)).
 ## Sample Grafana dashboard
-The metrics exposed can drive a rich dashboard, giving you a graphical insight into the performance of your application ( [exported dashboard available here](examples/NET_runtime_metrics_dashboard.json), work in progress):
+The metrics exposed can drive a rich dashboard, giving you a graphical insight into the performance of your application ( [exported dashboard available here](examples/NET_runtime_metrics_dashboard.json)):
 
 ![Grafana dashboard sample](docs/grafana-example.PNG)
 ## Performance impact

@@ -15,7 +15,7 @@
         <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
-        <Version>$(PromMajorVersion).1.1-beta</Version>
+        <Version>$(PromMajorVersion).2.0-beta</Version>
         <Authors>James Luck</Authors>
         <PackageTags>Prometheus prometheus-net IOnDemandCollector runtime metrics gc jit threadpool contention stats</PackageTags>
         <PackageProjectUrl>https://github.com/djluck/prometheus-net.DotNetRuntime</PackageProjectUrl>
