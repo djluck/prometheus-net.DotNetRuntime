@@ -14,25 +14,31 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "5.4.2"
+      "version": "6.1.6"
     },
     {
       "type": "panel",
       "id": "graph",
       "name": "Graph",
-      "version": "5.0.0"
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "heatmap",
+      "name": "Heatmap",
+      "version": ""
     },
     {
       "type": "datasource",
       "id": "prometheus",
       "name": "Prometheus",
-      "version": "5.0.0"
+      "version": "1.0.0"
     },
     {
       "type": "panel",
       "id": "singlestat",
       "name": "Singlestat",
-      "version": "5.0.0"
+      "version": ""
     }
   ],
   "annotations": {
@@ -52,6 +58,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
+  "iteration": 1565080722750,
   "links": [],
   "panels": [
     {
@@ -78,7 +85,7 @@
       ],
       "datasource": "${DS_PROMETHEUS}",
       "decimals": 1,
-      "description": "The percentage of total process CPU utilization that was dedicated to performing garbage collections.",
+      "description": "The percentage of available CPU resources consumed.",
       "format": "percentunit",
       "gauge": {
         "maxValue": 100,
@@ -89,7 +96,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
+        "w": 4,
         "x": 0,
         "y": 1
       },
@@ -130,14 +137,14 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "dotnet_gc_cpu_ratio",
+          "expr": "rate(process_cpu_seconds_total{instance=\"$instance\"}[$__interval]) / process_cpu_count{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
-      "thresholds": "0.1,0.30",
-      "title": "% GC CPU consumption",
+      "thresholds": "0.7,0.90",
+      "title": "% CPU consumption",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -171,8 +178,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 3,
+        "w": 4,
+        "x": 4,
         "y": 1
       },
       "id": 28,
@@ -212,7 +219,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "dotnet_gc_pause_ratio",
+          "expr": "dotnet_gc_pause_ratio{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -220,6 +227,88 @@
       ],
       "thresholds": "0.05,0.25",
       "title": "% Paused time",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": true,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_PROMETHEUS}",
+      "decimals": 1,
+      "description": "The percentage of total process CPU utilization that was dedicated to performing garbage collections.",
+      "format": "percentunit",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 42,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "dotnet_gc_cpu_ratio{instance=\"$instance\"}",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "0.1,0.30",
+      "title": "% GC CPU consumption",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -253,8 +342,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 6,
+        "w": 4,
+        "x": 12,
         "y": 1
       },
       "id": 29,
@@ -294,13 +383,13 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "dotnet_jit_cpu_ratio",
+          "expr": "dotnet_jit_cpu_ratio{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
-      "thresholds": "10,25",
+      "thresholds": "0.5,0.20",
       "title": "% JIT CPU consumption",
       "type": "singlestat",
       "valueFontSize": "80%",
@@ -323,7 +412,7 @@
         "#d44a3a"
       ],
       "datasource": "${DS_PROMETHEUS}",
-      "decimals": 3,
+      "decimals": null,
       "description": "The delay between when a job is scheduled for execution on the thread pool and when it starts execution. Measurement taken from the 90th percentile.",
       "format": "s",
       "gauge": {
@@ -335,8 +424,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 9,
+        "w": 4,
+        "x": 16,
         "y": 1
       },
       "id": 31,
@@ -376,13 +465,13 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "histogram_quantile(0.90, sum(rate(dotnet_threadpool_scheduling_delay_seconds_bucket[$__interval])) by (le))",
+          "expr": "sum(rate(dotnet_threadpool_scheduling_delay_seconds_sum{instance=\"$instance\"}[$__interval])) / sum(rate(dotnet_threadpool_scheduling_delay_seconds_count{instance=\"$instance\"}[$__interval]))",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
-      "thresholds": "0.01,0.5",
+      "thresholds": "0.001,0.5",
       "title": "Thread pool scheduling latency",
       "type": "singlestat",
       "valueFontSize": "80%",
@@ -445,7 +534,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "dotnet_gc_heap_size_bytes",
+          "expr": "dotnet_gc_heap_size_bytes{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "gen {{gc_generation}}",
@@ -507,7 +596,7 @@
         "y": 6
       },
       "id": 37,
-      "interval": "30s",
+      "interval": "",
       "legend": {
         "avg": false,
         "current": false,
@@ -527,18 +616,18 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": false,
+      "stack": true,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(dotnet_gc_allocated_bytes_total{gc_heap=\"loh\"}[$__interval])) by (gc_heap)",
+          "expr": "sum(rate(dotnet_gc_allocated_bytes_total{gc_heap=\"loh\", instance=\"$instance\"}[$__interval])) by (gc_heap)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Large object heap (objects > 85KB)",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(dotnet_gc_allocated_bytes_total{gc_heap=\"soh\"}[$__interval])) by (gc_heap)",
+          "expr": "sum(rate(dotnet_gc_allocated_bytes_total{gc_heap=\"soh\", instance=\"$instance\"}[$__interval])) by (gc_heap)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Small object heap",
@@ -625,14 +714,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "dotnet_gc_cpu_ratio",
+          "expr": "dotnet_gc_cpu_ratio{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "GC CPU %",
           "refId": "A"
         },
         {
-          "expr": "dotnet_gc_pause_ratio",
+          "expr": "dotnet_gc_pause_ratio{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "GC Pause %",
@@ -696,7 +785,7 @@
         "y": 14
       },
       "id": 13,
-      "interval": "30s",
+      "interval": "",
       "legend": {
         "avg": false,
         "current": false,
@@ -717,11 +806,11 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": false,
+      "stack": true,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(dotnet_gc_collection_seconds_count[$__interval])) by (gc_generation, gc_type)",
+          "expr": "sum(rate(dotnet_gc_collection_seconds_count{instance=\"$instance\"}[$__interval])) by (gc_generation, gc_type)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -733,7 +822,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Number of GC collections",
+      "title": "Number of GC collections/ sec",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -771,111 +860,68 @@
       }
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
+      "cards": {
+        "cardPadding": null,
+        "cardRound": null
+      },
+      "color": {
+        "cardColor": "#b4ff00",
+        "colorScale": "sqrt",
+        "colorScheme": "interpolateBlues",
+        "exponent": 0.5,
+        "mode": "spectrum"
+      },
+      "dataFormat": "tsbuckets",
       "datasource": "${DS_PROMETHEUS}",
-      "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 8,
         "x": 8,
         "y": 14
       },
+      "heatmap": {},
+      "hideZeroBuckets": true,
+      "highlightCards": true,
       "id": 11,
-      "interval": "30s",
       "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
+        "show": false
       },
-      "lines": true,
-      "linewidth": 1,
       "links": [],
-      "nullPointMode": "null as zero",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "reverseYBuckets": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(rate(dotnet_gc_collection_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
+          "expr": "sum(increase(dotnet_gc_collection_seconds_bucket{instance=\"$instance\"}[$__interval])) by (le)",
+          "format": "heatmap",
           "intervalFactor": 1,
-          "legendFormat": "Median",
+          "legendFormat": "{{le}}",
           "refId": "A"
-        },
-        {
-          "expr": "histogram_quantile(0.9, sum(rate(dotnet_gc_collection_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "90th %",
-          "refId": "B"
-        },
-        {
-          "expr": "histogram_quantile(0.99, sum(rate(dotnet_gc_collection_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "99th %",
-          "refId": "C"
-        },
-        {
-          "expr": "histogram_quantile(1.0, sum(rate(dotnet_gc_collection_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "Max",
-          "refId": "D"
         }
       ],
-      "thresholds": [],
       "timeFrom": null,
-      "timeRegions": [],
       "timeShift": null,
       "title": "GC duration",
       "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
         "show": true,
-        "values": []
+        "showHistogram": false
       },
-      "yaxes": [
-        {
-          "format": "s",
-          "label": null,
-          "logBase": 10,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "type": "heatmap",
+      "xAxis": {
+        "show": true
+      },
+      "xBucketNumber": null,
+      "xBucketSize": null,
+      "yAxis": {
+        "decimals": null,
+        "format": "s",
+        "logBase": 1,
+        "max": null,
+        "min": null,
+        "show": true,
+        "splitFactor": null
+      },
+      "yBucketBound": "auto",
+      "yBucketNumber": null,
+      "yBucketSize": null
     },
     {
       "aliasColors": {},
@@ -915,7 +961,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(dotnet_gc_collection_seconds_sum[$__interval])) by (gc_generation) / sum(increase(dotnet_gc_collection_seconds_count[$__interval])) by (gc_generation) ",
+          "expr": "sum(increase(dotnet_gc_collection_seconds_sum{instance=\"$instance\"}[$__interval])) by (gc_generation) / sum(increase(dotnet_gc_collection_seconds_count{instance=\"$instance\"}[$__interval])) by (gc_generation) ",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{gc_generation}}",
@@ -973,105 +1019,88 @@
       },
       "id": 23,
       "panels": [],
-      "title": "Row title",
+      "title": "Thread pool",
       "type": "row"
     },
     {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorPostfix": false,
-      "colorValue": false,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
-      "datasource": "${DS_PROMETHEUS}",
-      "format": "short",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": false
+      "cards": {
+        "cardPadding": null,
+        "cardRound": null
       },
+      "color": {
+        "cardColor": "#b4ff00",
+        "colorScale": "sqrt",
+        "colorScheme": "interpolateOranges",
+        "exponent": 0.5,
+        "mode": "spectrum"
+      },
+      "dataFormat": "tsbuckets",
+      "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 8,
+        "w": 8,
         "x": 0,
         "y": 23
       },
-      "id": 21,
-      "interval": "30s",
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": " th",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": true,
-        "lineColor": "rgb(31, 120, 193)",
+      "heatmap": {},
+      "hideZeroBuckets": true,
+      "highlightCards": true,
+      "id": 34,
+      "legend": {
         "show": true
       },
-      "tableColumn": "",
+      "links": [],
+      "reverseYBuckets": false,
       "targets": [
         {
-          "expr": "dotnet_threadpool_num_threads",
-          "format": "time_series",
+          "expr": "sum by (le) (increase(dotnet_threadpool_scheduling_delay_seconds_bucket{instance=\"$instance\"}[$__interval]))",
+          "format": "heatmap",
           "intervalFactor": 1,
-          "refId": "A"
+          "legendFormat": "{{le}}",
+          "refId": "D"
         }
       ],
-      "thresholds": "",
-      "title": "Num thread pool threads",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Thread pool scheduling latency",
+      "tooltip": {
+        "show": true,
+        "showHistogram": false
+      },
+      "type": "heatmap",
+      "xAxis": {
+        "show": true
+      },
+      "xBucketNumber": null,
+      "xBucketSize": null,
+      "yAxis": {
+        "decimals": null,
+        "format": "s",
+        "logBase": 1,
+        "max": null,
+        "min": null,
+        "show": true,
+        "splitFactor": null
+      },
+      "yBucketBound": "auto",
+      "yBucketNumber": null,
+      "yBucketSize": null
     },
     {
       "aliasColors": {},
       "bars": false,
+      "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
+        "h": 8,
+        "w": 8,
+        "x": 8,
         "y": 23
       },
-      "id": 34,
-      "interval": "30s",
+      "id": 21,
       "legend": {
         "avg": false,
         "current": false,
@@ -1084,9 +1113,9 @@
       "lines": true,
       "linewidth": 1,
       "links": [],
-      "nullPointMode": "null as zero",
+      "nullPointMode": "null",
       "percentage": false,
-      "pointradius": 5,
+      "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
@@ -1095,39 +1124,17 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(rate(dotnet_threadpool_scheduling_delay_seconds_bucket[$__interval])) by (le))",
+          "expr": "dotnet_threadpool_num_threads{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "Median",
           "refId": "A"
-        },
-        {
-          "expr": "histogram_quantile(0.9, sum(rate(dotnet_threadpool_scheduling_delay_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "90th %",
-          "refId": "B"
-        },
-        {
-          "expr": "histogram_quantile(0.99, sum(rate(dotnet_threadpool_scheduling_delay_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "99th %",
-          "refId": "C"
-        },
-        {
-          "expr": "histogram_quantile(1.0, sum(rate(dotnet_threadpool_scheduling_delay_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "Max",
-          "refId": "D"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Thread pool scheduling latency",
+      "title": "Num thread pool threads",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1143,9 +1150,9 @@
       },
       "yaxes": [
         {
-          "format": "s",
+          "format": "short",
           "label": null,
-          "logBase": 10,
+          "logBase": 1,
           "max": null,
           "min": null,
           "show": true
@@ -1172,13 +1179,13 @@
       "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 32
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 23
       },
       "id": 19,
-      "interval": "30s",
+      "interval": "",
       "legend": {
         "avg": false,
         "current": false,
@@ -1202,7 +1209,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(dotnet_threadpool_adjustments_total[$__interval])) by (adjustment_reason )",
+          "expr": "sum(increase(dotnet_threadpool_adjustments_total{instance=\"$instance\"}[$__interval])) by (adjustment_reason )",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{adjustment_reason}}",
@@ -1251,84 +1258,17 @@
       }
     },
     {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_PROMETHEUS}",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
+      "collapsed": false,
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 1,
+        "w": 24,
         "x": 0,
-        "y": 41
+        "y": 31
       },
-      "id": 17,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false
-      },
-      "tableColumn": "Value",
-      "targets": [
-        {
-          "expr": "",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": "",
-      "title": "Panel Title",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "avg"
+      "id": 41,
+      "panels": [],
+      "title": "JIT compliation",
+      "type": "row"
     },
     {
       "aliasColors": {},
@@ -1338,13 +1278,13 @@
       "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 50
+        "y": 32
       },
       "id": 15,
-      "interval": "1m",
+      "interval": "",
       "legend": {
         "avg": false,
         "current": false,
@@ -1368,23 +1308,103 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.9, sum(increase(dotnet_gc_collection_seconds_bucket[$__interval])) by (le))",
+          "expr": "rate(dotnet_jit_method_total{dynamic=\"true\", instance=\"$instance\"}[$__interval])",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "",
+          "legendFormat": "Dynamic methods",
+          "refId": "C"
+        },
+        {
+          "expr": "rate(dotnet_jit_method_total{dynamic=\"false\", instance=\"$instance\"}[$__interval])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "Methods",
           "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Methods compiled/ sec",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
         },
         {
-          "expr": "histogram_quantile(0.5, sum(increase(dotnet_gc_collection_seconds_bucket[$__interval])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "B"
-        },
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
+      "id": 43,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
         {
-          "expr": "histogram_quantile(1.0, sum(increase(dotnet_gc_collection_seconds_bucket[$__interval])) by (le))",
+          "expr": "dotnet_jit_cpu_ratio{instance=\"$instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "",
+          "legendFormat": "% CPU utilization",
           "refId": "C"
         }
       ],
@@ -1392,7 +1412,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Panel Title",
+      "title": "JIT CPU usage ",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1408,7 +1428,106 @@
       },
       "yaxes": [
         {
-          "format": "s",
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 39,
+      "panels": [],
+      "title": "Contention",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 41
+      },
+      "id": 44,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(dotnet_contention_total{instance=\"$instance\"}[$__interval])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "# Locks contended",
+          "refId": "C"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Locks contended/ sec",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1437,12 +1556,13 @@
       "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 59
+        "x": 12,
+        "y": 41
       },
-      "id": 8,
+      "id": 45,
+      "interval": "",
       "legend": {
         "avg": false,
         "current": false,
@@ -1466,23 +1586,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(rate(dotnet_gc_collection_seconds_bucket[10m])) by (le))",
+          "expr": "increase(dotnet_contention_seconds_total{instance=\"$instance\"}[$__interval])",
           "format": "time_series",
           "intervalFactor": 1,
-          "refId": "A"
-        },
-        {
-          "expr": "histogram_quantile(0.9, sum(rate(dotnet_gc_collection_seconds_bucket[10m])) by (le))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "B"
+          "legendFormat": "Waiting time",
+          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Panel Title",
+      "title": "Time waiting for locks",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1518,98 +1633,41 @@
         "align": false,
         "alignLevel": null
       }
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
-      "datasource": "${DS_PROMETHEUS}",
-      "format": "decbytes",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 0,
-        "y": 68
-      },
-      "id": 4,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "sum(dotnet_gc_heap_size_bytes)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": "",
-      "title": "Heap size (all generations)",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "avg"
     }
   ],
   "refresh": false,
-  "schemaVersion": 16,
+  "schemaVersion": 18,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "dotnet_build_info",
+        "hide": 0,
+        "includeAll": false,
+        "label": "instance",
+        "multi": false,
+        "name": "instance",
+        "options": [],
+        "query": "dotnet_build_info",
+        "refresh": 1,
+        "regex": "/instance=\"([^\"]+)\"/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
-    "from": "now-30m",
-    "to": "now"
+    "from": "2019-08-04T03:15:57.203Z",
+    "to": "2019-08-04T12:04:02.670Z"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -1639,5 +1697,5 @@
   "timezone": "",
   "title": ".NET runtime metrics",
   "uid": "RHbwEa8mz",
-  "version": 45
+  "version": 17
 }
