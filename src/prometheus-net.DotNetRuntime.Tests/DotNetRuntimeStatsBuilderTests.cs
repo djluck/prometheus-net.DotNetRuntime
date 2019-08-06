@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestPlatform.Common.Telemetry;
 using NUnit.Framework;
 #if PROMV2
-using Prometheus.Advanced;    
+using Prometheus.Advanced;
 #endif
 using Prometheus.DotNetRuntime.StatsCollectors;
 
@@ -23,25 +24,22 @@ namespace Prometheus.DotNetRuntime.Tests
         {
             // arrange
             using (DotNetRuntimeStatsBuilder.Default().StartCollecting())
-            using (var metricServer = new MetricServer(12203))
-            using (var client = new HttpClient())
             {
-                metricServer.Start();
-
-                // act + assert
-                using (var resp = await client.GetAsync("http://localhost:12203/metrics"))
-                {
-                    var content = await resp.Content.ReadAsStringAsync();
-                    
-                    // Some basic assertions to check that the output of our stats collectors is present
-                    Assert.That(content, Contains.Substring("dotnet_threadpool"));
-                    Assert.That(content, Contains.Substring("dotnet_jit"));
-                    Assert.That(content, Contains.Substring("dotnet_gc"));
-                    Assert.That(content, Contains.Substring("dotnet_contention"));
-                }
+                await Assert_Expected_Stats_Are_Present_In_Registry(GetDefaultRegistry());
             }
         }
 
+        [Test]
+        public async Task Default_registers_all_expected_stats_to_a_custom_registry()
+        {
+            // arrange
+            var registry = NewRegistry();
+            using (DotNetRuntimeStatsBuilder.Default().StartCollecting(registry))
+            {
+                await Assert_Expected_Stats_Are_Present_In_Registry(registry);
+            }
+        }
+        
         [Test]
         public void WithCustomCollector_will_not_register_the_same_collector_twice()
         {
@@ -52,7 +50,7 @@ namespace Prometheus.DotNetRuntime.Tests
 
             Assert.That(builder.StatsCollectors.Count, Is.EqualTo(1));
         }
-        
+
         [Test]
         public void StartCollecting_Does_Not_Allow_Two_Collectors_To_Run_Simultaneously()
         {
@@ -61,29 +59,26 @@ namespace Prometheus.DotNetRuntime.Tests
                 Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
             }
         }
-        
+
         [Test]
-        public void StartCollecting_Allows_A_New_Collector_To_Run_After_Disposing_A_Previous_Collector()
+        public async Task StartCollecting_Allows_A_New_Collector_To_Run_After_Disposing_A_Previous_Collector()
         {
             using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
             {
+                await Assert_Expected_Stats_Are_Present_In_Registry(GetDefaultRegistry());
             }
-            
+
             using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
             {
+                await Assert_Expected_Stats_Are_Present_In_Registry(GetDefaultRegistry());
             }
         }
 
         [Test]
         public void StartCollecting_Does_Not_Allow_Two_Collectors_To_Run_Simultaneously_For_Each_Registry_Instance()
         {
-#if PROMV2
-            var registry1 = new DefaultCollectorRegistry();
-            var registry2 = new DefaultCollectorRegistry();
-#elif PROMV3
-            var registry1 = Metrics.NewCustomRegistry();
-            var registry2 = Metrics.NewCustomRegistry();
-#endif
+            var registry1 = NewRegistry();;
+            var registry2 = NewRegistry();;
 
             using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
             {
@@ -98,9 +93,11 @@ namespace Prometheus.DotNetRuntime.Tests
                         Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1));
                         Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2));
                     }
+
                     Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
                     Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1));
                 }
+
                 Assert.Throws<InvalidOperationException>(() => DotNetRuntimeStatsBuilder.Customize().StartCollecting());
             }
         }
@@ -108,32 +105,85 @@ namespace Prometheus.DotNetRuntime.Tests
         [Test]
         public void StartCollecting_Allows_A_New_Collector_To_Run_After_Disposing_Previous_Collector_For_Each_Registry_Instance()
         {
-#if PROMV2
-            var registry1 = new DefaultCollectorRegistry();
-            var registry2 = new DefaultCollectorRegistry();
-#elif PROMV3
-            var registry1 = Metrics.NewCustomRegistry();
-            var registry2 = Metrics.NewCustomRegistry();
-#endif
-            
+            var registry1 = NewRegistry();
+            var registry2 = NewRegistry();
+
             using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
             {
                 using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
                 {
                 }
+
                 using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
                 {
                 }
             }
+
             using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry2))
             {
                 using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
                 {
                 }
+
                 using (DotNetRuntimeStatsBuilder.Customize().StartCollecting(registry1))
                 {
                 }
             }
         }
+
+        private async Task Assert_Expected_Stats_Are_Present_In_Registry(
+#if PROMV2
+            DefaultCollectorRegistry registry
+#else
+            CollectorRegistry registry
+#endif
+        )
+        {
+            // arrange
+            const int metricsPort = 12203;
+            using (var metricServer = new MetricServer(metricsPort, registry: registry))
+            using (var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(2) })
+            {
+                metricServer.Start();
+
+                // act + assert
+                using (var resp = await client.GetAsync($"http://localhost:{metricsPort}/metrics"))
+                {
+                    var content = await resp.Content.ReadAsStringAsync();
+
+                    // Some basic assertions to check that the output of our stats collectors is present
+                    Assert.That(content, Contains.Substring("dotnet_threadpool"));
+                    Assert.That(content, Contains.Substring("dotnet_jit"));
+                    Assert.That(content, Contains.Substring("dotnet_gc"));
+                    Assert.That(content, Contains.Substring("dotnet_contention"));
+                    Assert.That(content, Contains.Substring("dotnet_build_info"));
+                    Assert.That(content, Contains.Substring("process_cpu_count"));
+                }
+            }
+        }
+        
+#if PROMV2
+        private DefaultCollectorRegistry NewRegistry()
+        {
+            return new DefaultCollectorRegistry();
+        }
+
+        private DefaultCollectorRegistry GetDefaultRegistry()
+        {
+            return DefaultCollectorRegistry.Instance;
+        }
+        
+#elif PROMV3
+        private CollectorRegistry NewRegistry()
+        {
+            return Metrics.NewCustomRegistry();
+        }
+
+        private CollectorRegistry GetDefaultRegistry()
+        {
+            return Metrics.DefaultRegistry;
+        }
+#endif
+        
     }
 }
