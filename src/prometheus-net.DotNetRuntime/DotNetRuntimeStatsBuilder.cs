@@ -5,11 +5,13 @@ using System.Diagnostics.Tracing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-#if PROMV2
-using Prometheus.Advanced;
-#endif
 using Prometheus.DotNetRuntime.StatsCollectors;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
+#if PROMV2
+using TCollectorRegistry = Prometheus.Advanced.DefaultCollectorRegistry;
+#elif PROMV3
+using TCollectorRegistry = Prometheus.CollectorRegistry;
+#endif
 
 namespace Prometheus.DotNetRuntime
 {
@@ -59,17 +61,27 @@ namespace Prometheus.DotNetRuntime
             /// <returns></returns>
             public IDisposable StartCollecting()
             {
-                if (DotNetRuntimeStatsCollector.Instance != null)
-                {
-                    throw new InvalidOperationException(".NET runtime metrics are already being collected. Dispose() of your previous collector before calling this method again.");
-                }
-
-                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler, _debugMetrics);
 #if PROMV2
-                DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(runtimeStatsCollector);
+                return StartCollecting(TCollectorRegistry.Instance);
 #elif PROMV3
-                runtimeStatsCollector.RegisterMetrics(Metrics.DefaultRegistry);
-                Metrics.DefaultRegistry.AddBeforeCollectCallback(runtimeStatsCollector.UpdateMetrics);
+                return StartCollecting(Metrics.DefaultRegistry);
+#endif
+            }
+
+            /// <summary>
+            /// Finishes configuration and starts collecting .NET runtime metrics. Returns a <see cref="IDisposable"/> that
+            /// can be disposed of to stop metric collection. 
+            /// </summary>
+            /// <param name="registry">Registry where metrics will be collected</param>
+            /// <returns></returns>
+            public IDisposable StartCollecting(TCollectorRegistry registry)
+            {
+                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler, _debugMetrics, registry);
+#if PROMV2
+                registry.RegisterOnDemandCollectors(runtimeStatsCollector);
+#elif PROMV3
+                runtimeStatsCollector.RegisterMetrics(registry);
+                registry.AddBeforeCollectCallback(runtimeStatsCollector.UpdateMetrics);
 #endif
                 SetupBuildInfo();
 
