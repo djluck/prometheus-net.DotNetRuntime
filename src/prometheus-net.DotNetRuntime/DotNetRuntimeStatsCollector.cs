@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 #if PROMV2
 using Prometheus.Advanced;
 using TCollectorRegistry = Prometheus.Advanced.ICollectorRegistry;
 #elif PROMV3
 using TCollectorRegistry = Prometheus.CollectorRegistry;
 #endif
-using Prometheus.DotNetRuntime.StatsCollectors;
 
 namespace Prometheus.DotNetRuntime
 {
@@ -18,6 +20,8 @@ namespace Prometheus.DotNetRuntime
         , IOnDemandCollector
 #endif
     {
+        private static readonly Dictionary<TCollectorRegistry, DotNetRuntimeStatsCollector> Instances = new Dictionary<TCollectorRegistry, DotNetRuntimeStatsCollector>();
+        
         private DotNetEventListener[] _eventListeners;
         private readonly ImmutableHashSet<IEventSourceStatsCollector> _statsCollectors;
         private readonly bool _enabledDebugging;
@@ -33,20 +37,17 @@ namespace Prometheus.DotNetRuntime
             _registry = registry;
             lock (_lockInstance)
             {
-                if (Instance.ContainsKey(registry))
+                if (Instances.ContainsKey(registry))
                 {
                     throw new InvalidOperationException(".NET runtime metrics are already being collected. Dispose() of your previous collector before calling this method again.");
                 }
 
-                Instance.Add(registry, this);
+                Instances.Add(registry, this);
             }
         }
 
-        internal static Dictionary<TCollectorRegistry, DotNetRuntimeStatsCollector> Instance { get; private set; } = new Dictionary<TCollectorRegistry, DotNetRuntimeStatsCollector>();
-
         public void RegisterMetrics(TCollectorRegistry registry)
-        {
-            
+        {   
 #if PROMV2
             var metrics = new MetricFactory(registry);
 #elif PROMV3
@@ -62,6 +63,8 @@ namespace Prometheus.DotNetRuntime
             _eventListeners = _statsCollectors
                 .Select(sc => new DotNetEventListener(sc, _errorHandler, _enabledDebugging))
                 .ToArray();
+
+            SetupConstantMetrics(metrics);
         }
 
         public void UpdateMetrics()
@@ -93,8 +96,49 @@ namespace Prometheus.DotNetRuntime
             {
                 lock (_lockInstance)
                 {
-                    Instance.Remove(_registry);
+                    Instances.Remove(_registry);
                 }
+            }
+        }
+        
+        private void SetupConstantMetrics(MetricFactory metrics)
+        {
+            // These metrics are fairly generic in name, catch any exceptions on trying to create them 
+            // in case prometheus-net or another plugin has registered them.
+            try
+            {
+                var buildInfo = metrics.CreateGauge(
+                    "dotnet_build_info",
+                    "Build information about prometheus-net.DotNetRuntime and the environment",
+                    "version",
+                    "target_framework",
+                    "runtime_version",
+                    "os_version",
+                    "process_architecture"
+                );
+
+                buildInfo.Labels(
+                        this.GetType().Assembly.GetName().Version.ToString(),
+                        Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName,
+                        RuntimeInformation.FrameworkDescription,
+                        RuntimeInformation.OSDescription,
+                        RuntimeInformation.ProcessArchitecture.ToString()
+                    )
+                    .Set(1);
+            }
+            catch (Exception e)
+            {
+                _errorHandler(e);
+            }
+
+            try
+            {
+                var processorCount = metrics.CreateGauge("process_cpu_count", "The number of processor cores available to this process.");
+                processorCount.Set(Environment.ProcessorCount);
+            }
+            catch (Exception e)
+            {
+                _errorHandler(e);
             }
         }
     }

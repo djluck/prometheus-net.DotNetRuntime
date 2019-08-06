@@ -10,7 +10,6 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.Util
     [TestFixture]
     public class Given_An_EventPairTimer_That_Samples_Every_Event : EventPairTimerBaseClass
     {
-        private const int EventIdStart = 1, EventIdEnd = 2;
         private EventPairTimer<long> _eventPairTimer;
 
         [SetUp]

@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Tracing;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using Prometheus.DotNetRuntime.StatsCollectors;
 using Prometheus.DotNetRuntime.StatsCollectors.Util;
 #if PROMV2
@@ -49,7 +45,6 @@ namespace Prometheus.DotNetRuntime
 
         public class Builder
         {
-            private Gauge _buildInfo;
             private Action<Exception> _errorHandler;
             private bool _debugMetrics;
             internal HashSet<IEventSourceStatsCollector> StatsCollectors { get; } = new HashSet<IEventSourceStatsCollector>(new TypeEquality<IEventSourceStatsCollector>());
@@ -83,7 +78,6 @@ namespace Prometheus.DotNetRuntime
                 runtimeStatsCollector.RegisterMetrics(registry);
                 registry.AddBeforeCollectCallback(runtimeStatsCollector.UpdateMetrics);
 #endif
-                SetupBuildInfo();
 
                 return runtimeStatsCollector;
             }
@@ -188,31 +182,6 @@ namespace Prometheus.DotNetRuntime
             {
                 _debugMetrics = generateDebugMetrics;
                 return this;
-            }
-
-            private void SetupBuildInfo()
-            {
-                if (_buildInfo != null)
-                    return;
-
-                _buildInfo = Metrics.CreateGauge(
-                    "dotnet_build_info", 
-                    "Build information about prometheus-net.DotNetRuntime and the environment", 
-                    "version", 
-                    "target_framework",
-                    "runtime_version", 
-                    "os_version",
-                    "process_architecture"
-                );
-                
-                _buildInfo.Labels(
-                        this.GetType().Assembly.GetName().Version.ToString(),
-                        Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName,
-                    RuntimeInformation.FrameworkDescription,
-                    RuntimeInformation.OSDescription,
-                    RuntimeInformation.ProcessArchitecture.ToString()
-                    )
-                    .Set(1);
             }
 
             internal class TypeEquality<T> : IEqualityComparer<T>
