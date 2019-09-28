@@ -12,6 +12,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
     public class LabelGenerator
     {
         public static Dictionary<TEnum, string> MapEnumToLabelValues<TEnum>()
+            where TEnum : Enum
         {
             var dict = new Dictionary<TEnum, string>();
 

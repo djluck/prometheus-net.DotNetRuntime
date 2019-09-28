@@ -4,8 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "prometheus-net.DotNetRuntim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "prometheus-net.DotNetRuntime.Tests", "prometheus-net.DotNetRuntime.Tests\prometheus-net.DotNetRuntime.Tests.csproj", "{7F4E2E72-5745-4312-B238-CD7B731957B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{2883E527-D3BD-4B98-A4A3-3F5924FB851F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		ReleaseV2|Any CPU = ReleaseV2|Any CPU
@@ -14,14 +12,6 @@ Global
 		ReleaseV3|Any CPU = ReleaseV3|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.ReleaseV2|Any CPU.ActiveCfg = ReleaseV2|Any CPU
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.ReleaseV2|Any CPU.Build.0 = ReleaseV2|Any CPU
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.DebugV2|Any CPU.ActiveCfg = DebugV2|Any CPU
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.DebugV2|Any CPU.Build.0 = DebugV2|Any CPU
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.DebugV3|Any CPU.ActiveCfg = DebugV3|Any CPU
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.DebugV3|Any CPU.Build.0 = DebugV3|Any CPU
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.ReleaseV3|Any CPU.ActiveCfg = ReleaseV3|Any CPU
-		{2883E527-D3BD-4B98-A4A3-3F5924FB851F}.ReleaseV3|Any CPU.Build.0 = ReleaseV3|Any CPU
 		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.ReleaseV2|Any CPU.ActiveCfg = ReleaseV2|Any CPU
 		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.ReleaseV2|Any CPU.Build.0 = ReleaseV2|Any CPU
 		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.DebugV2|Any CPU.ActiveCfg = DebugV2|Any CPU

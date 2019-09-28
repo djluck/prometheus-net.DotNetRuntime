@@ -11,7 +11,6 @@
     
     <PropertyGroup>
         <PromMajorVersion Condition="$(PromMajorVersion) == ''">3</PromMajorVersion>
-        <TargetFramework>netcoreapp2.2</TargetFramework>
         <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
@@ -25,6 +24,8 @@
         <PackageLicenseUrl>https://github.com/djluck/prometheus-net.DotNetRuntime/blob/master/LICENSE.txt</PackageLicenseUrl>
         <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+        <LangVersion>8</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
@@ -35,6 +36,14 @@
     <PropertyGroup Condition=" $(Configuration.StartsWith('Debug')) ">
         <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
         <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugV2' ">
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugV3' ">
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     
     <ItemGroup Condition="$(PromMajorVersion) == '3'">

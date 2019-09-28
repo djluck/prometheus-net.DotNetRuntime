@@ -27,8 +27,8 @@ namespace Prometheus.DotNetRuntime
             
             if (_enableDebugging)
             {
-                _eventTypeCounts = _eventTypeCounts ?? Metrics.CreateCounter($"dotnet_debug_events_total", "The total number of .NET diagnostic events processed", "collector_name", "event_source_name", "event_name");
-                _cpuConsumed = _cpuConsumed ?? Metrics.CreateCounter("dotnet_debug_cpu_seconds_total", "The total CPU time consumed by processing .NET diagnostic events (does not include the CPU cost to generate the events)", "collector_name", "event_source_name", "event_name");
+                _eventTypeCounts ??= Metrics.CreateCounter($"dotnet_debug_events_total", "The total number of .NET diagnostic events processed", "collector_name", "event_source_name", "event_name");
+                _cpuConsumed ??= Metrics.CreateCounter("dotnet_debug_cpu_seconds_total", "The total CPU time consumed by processing .NET diagnostic events (does not include the CPU cost to generate the events)", "collector_name", "event_source_name", "event_name");
                 _nameSnakeCase = collector.GetType().Name.ToSnakeCase();
             }
             

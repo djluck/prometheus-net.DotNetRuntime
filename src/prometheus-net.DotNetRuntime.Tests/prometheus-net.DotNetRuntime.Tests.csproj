@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <RootNamespace>Prometheus.DotNetRuntime.Tests</RootNamespace>
         <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>

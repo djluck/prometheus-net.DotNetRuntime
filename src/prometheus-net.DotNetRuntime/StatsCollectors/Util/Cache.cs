@@ -18,7 +18,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         
         internal Cache(TimeSpan expireItemsAfter, int initialCapacity = 32)
         {
-            this._expireItemsAfter = expireItemsAfter;
+            _expireItemsAfter = expireItemsAfter;
             if (expireItemsAfter == TimeSpan.Zero)
                 throw new ArgumentNullException(nameof(expireItemsAfter));
             
