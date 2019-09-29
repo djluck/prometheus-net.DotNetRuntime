@@ -11,7 +11,6 @@ jobs:
       uses: docker://mcr.microsoft.com/dotnet/core/sdk:3.0
       with:
         args: dotnet test -c "DebugV2"
-      run: 
     - name: Build and test (using v3.* of prometheus-net)
       uses: docker://mcr.microsoft.com/dotnet/core/sdk:3.0
       with:
