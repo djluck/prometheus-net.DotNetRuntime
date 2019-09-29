@@ -1,0 +1,15 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Build and test (using v2.* of prometheus-net)
+      uses: docker://mcr.microsoft.com/dotnet/core/sdk:3.0
+      run: dotnet test -c "DebugV2"
+    - name: Build and test (using v3.* of prometheus-net)
+      uses: docker://mcr.microsoft.com/dotnet/core/sdk:3.0
+      run: dotnet test -c "DebugV3"
