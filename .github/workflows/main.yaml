@@ -5,11 +5,14 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
     steps:
+    - uses: actions/checkout@v1
     - name: Build and test (using v2.* of prometheus-net)
       uses: docker://mcr.microsoft.com/dotnet/core/sdk:3.0
-      run: dotnet test -c "DebugV2"
+      with:
+        args: dotnet test -c "DebugV2"
+      run: 
     - name: Build and test (using v3.* of prometheus-net)
       uses: docker://mcr.microsoft.com/dotnet/core/sdk:3.0
-      run: dotnet test -c "DebugV3"
+      with:
+        args: dotnet test -c "DebugV3"
