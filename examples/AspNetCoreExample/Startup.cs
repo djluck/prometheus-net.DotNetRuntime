@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Prometheus;
 
 namespace AspNetCoreExample
 {
@@ -42,7 +43,15 @@ namespace AspNetCoreExample
             }
 
             app.UseHttpsRedirection();
-            app.UseMvc();
+            app.UseRouting(); 
+            
+            app.UseEndpoints(endpoints =>
+            {
+                // Mapping of endpoints goes here:
+                endpoints.MapControllers();
+            });
+            
+            app.UseMetricServer();
         }
     }
 }

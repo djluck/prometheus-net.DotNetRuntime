@@ -35,7 +35,6 @@ namespace AspNetCoreExample.Controllers
         private void CompileMe(Expression<Func<int>> func)
         {
             func.Compile()();
-            
         }
     }
 }
