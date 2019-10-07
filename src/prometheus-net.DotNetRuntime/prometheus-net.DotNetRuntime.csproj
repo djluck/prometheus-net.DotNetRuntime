@@ -14,23 +14,24 @@
         <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
-        <Version>$(PromMajorVersion).2.0-beta</Version>
+        <Version>$(PromMajorVersion).2.0</Version>
         <Authors>James Luck</Authors>
         <PackageTags>Prometheus prometheus-net IOnDemandCollector runtime metrics gc jit threadpool contention stats</PackageTags>
         <PackageProjectUrl>https://github.com/djluck/prometheus-net.DotNetRuntime</PackageProjectUrl>
         <Description>
             Exposes .NET core runtime metrics (GC, JIT, lock contention, thread pool) using the prometheus-net package.
         </Description>
-        <PackageLicenseUrl>https://github.com/djluck/prometheus-net.DotNetRuntime/blob/master/LICENSE.txt</PackageLicenseUrl>
+        <PackageLicense>https://github.com/djluck/prometheus-net.DotNetRuntime/blob/master/LICENSE.txt</PackageLicense>
         <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
         <Platforms>AnyCPU</Platforms>
         <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
         <LangVersion>8</LangVersion>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>1701;1702;CS1591;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
         <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <PropertyGroup Condition=" $(Configuration.StartsWith('Debug')) ">
@@ -38,12 +39,12 @@
         <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugV2' ">
-      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseV2' ">
+      <DocumentationFile>bin\ReleaseV2\prometheus-net.DotNetRuntime.xml</DocumentationFile>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugV3' ">
-      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseV3' ">
+      <DocumentationFile>bin\ReleaseV3\prometheus-net.DotNetRuntime.xml</DocumentationFile>
     </PropertyGroup>
     
     <ItemGroup Condition="$(PromMajorVersion) == '3'">
