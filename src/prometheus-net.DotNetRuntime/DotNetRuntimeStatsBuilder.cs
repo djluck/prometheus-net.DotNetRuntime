@@ -17,7 +17,7 @@ namespace Prometheus.DotNetRuntime
     public static class DotNetRuntimeStatsBuilder
     {
         /// <summary>
-        /// Includes all available .NET runtime metrics by default. Call <see cref="Builder.StartCollecting"/>
+        /// Includes all available .NET runtime metrics by default. Call <see cref="Builder.StartCollecting()"/>
         /// to begin collecting metrics.
         /// </summary>
         /// <returns></returns>
@@ -36,7 +36,7 @@ namespace Prometheus.DotNetRuntime
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// Include specific .NET runtime metrics by calling the WithXXX() methods and then call <see cref="Builder.StartCollecting"/>
+        /// Include specific .NET runtime metrics by calling the WithXXX() methods and then call <see cref="Builder.StartCollecting()"/>
         /// </remarks>
         public static Builder Customize()
         {
