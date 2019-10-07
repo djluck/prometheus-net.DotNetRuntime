@@ -15,21 +15,31 @@ namespace AspNetCoreExample
 {
     public class Program
     {
-        
         public static void Main(string[] args)
         {
-            DotNetRuntimeStatsBuilder.Default().WithErrorHandler(e =>
+            if (Environment.GetEnvironmentVariable("NOMON") == null)
             {
-                Console.WriteLine(e.ToString());
-            }).StartCollecting();
-            var metricServer = new MetricServer(12204);
-            metricServer.Start();
-            
+                Console.WriteLine("Enabling prometheus-net.DotNetStats...");
+                DotNetRuntimeStatsBuilder.Customize()
+                    .WithThreadPoolSchedulingStats()
+                    .WithContentionStats()
+                    .WithGcStats()
+                    .WithJitStats()
+                    .WithThreadPoolStats()
+                    .WithErrorHandler(ex => Console.WriteLine("ERROR: " + ex.ToString()))
+                    //.WithDebuggingMetrics(true);
+                    .StartCollecting();
+            }
+
             CreateWebHostBuilder(args).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureKestrel(opts =>
+                {
+                    opts.AllowSynchronousIO = true;
+                })
                 .UseStartup<Startup>();
     }
 }

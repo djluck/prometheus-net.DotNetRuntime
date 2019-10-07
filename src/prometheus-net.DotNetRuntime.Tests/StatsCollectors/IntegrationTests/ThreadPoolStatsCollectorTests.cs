@@ -25,7 +25,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
 
             await Task.WhenAll(tasks);
 
-            Assert.That(() => StatsCollector.NumThreads.Value, Is.GreaterThanOrEqualTo(Environment.ProcessorCount).After(200, 10));
+            Assert.That(() => StatsCollector.NumThreads.Value, Is.GreaterThanOrEqualTo(Environment.ProcessorCount).After(2000, 10));
             Assert.That(StatsCollector.AdjustmentsTotal.CollectAllValues().Sum(), Is.GreaterThanOrEqualTo(1));
         }
         
@@ -41,7 +41,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
                 await Task.WhenAll(httpTasks);
             }
           
-            Assert.That(() => StatsCollector.NumIocThreads.Value, Is.GreaterThanOrEqualTo(1).After(200, 10));
+            Assert.That(() => StatsCollector.NumIocThreads.Value, Is.GreaterThanOrEqualTo(1).After(2000, 10));
         }
     }
 }

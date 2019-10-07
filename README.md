@@ -9,19 +9,17 @@ A plugin for the [prometheus-net](https://github.com/prometheus-net/prometheus-n
 
 These metrics are essential for understanding the peformance of any non-trivial application. Even if your application is well instrumented, you're only getting half the story- what the runtime is doing completes the picture.
 
-## Status
-**This project is currently in beta**- there are a [number of bugs present in the .NET core 2.2 runtime](https://github.com/djluck/prometheus-net.DotNetRuntime/issues?q=is%3Aissue+is%3Aopen+label%3A".net+core+2.2+bug") that can see metrics not being populated or populated with invalid values or over-consumption of memory. Once .NET core 3.0 is released, this project will move out of beta status. 
-
 ## Installation
-**Requires .NET core v2.2+**.
+Supports .NET core v2.2+ but **.NET core v3.0+ is recommended**. There are a [number of bugs present in the .NET core 2.2 runtime](https://github.com/djluck/prometheus-net.DotNetRuntime/issues?q=is%3Aissue+is%3Aopen+label%3A".net+core+2.2+bug") 
+that can impact metric collection or runtime stability.
 
 Add the packge from [nuget](https://www.nuget.org/packages/prometheus-net.DotNetRuntime):
 ```powershell
-# If you're using v2 of prometheus-net
-dotnet add package prometheus-net.DotNetRuntime --version 2.2.0-beta
+# If you're using v3.* of prometheus-net
+dotnet add package prometheus-net.DotNetRuntime
 
-# If you're using v3 of prometheus-net
-dotnet add package prometheus-net.DotNetRuntime --version 3.2.0-beta
+# If you're using v2.* of prometheus-net
+dotnet add package prometheus-net.DotNetRuntime --version 2.2.0
 ```
 
 And then start the collector:
@@ -31,7 +29,8 @@ IDisposable collector = DotNetRuntimeStatsBuilder.Default().StartCollecting()
 
 You can customize the types of .NET metrics collected via the `Customize` method:
 ```csharp
-IDisposable collector = DotNetRuntimeStatsBuilder.Customize()
+IDisposable collector = DotNetRuntimeStatsBuilder
+	.Customize()
 	.WithContentionStats()
 	.WithJitStats()
 	.WithThreadPoolSchedulingStats()
@@ -80,8 +79,3 @@ reduce the sampling rate.
 ## Further reading 
 - The mechanism for listening to runtime events is outlined in the [.NET core 2.2 release notes](https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-2-2#core).
 - A partial list of core CLR events is available in the [ETW events documentation](https://docs.microsoft.com/en-us/dotnet/framework/performance/clr-etw-events).
-
-
-
-
-

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using NUnit.Framework;
 using Prometheus.DotNetRuntime.StatsCollectors;
@@ -41,13 +42,22 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         [Test]
         public void When_a_garbage_collection_is_performed_then_the_heap_sizes_are_updated()
         {
-            GC.Collect(0);
+            unsafe
+            {
+                // arrange (fix a variable to ensure the pinned objects counter is incremented
+                var b = new byte[1];
+                fixed (byte* p = b)
+                {
+                    // act
+                    GC.Collect(0);
+                }
 
-            Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("0").Value, Is.GreaterThan(0).After(200, 10));
-            Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("1").Value, Is.GreaterThan(0).After(200, 10));
-            Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("2").Value, Is.GreaterThan(0).After(200, 10));
-            Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("loh").Value, Is.GreaterThan(0).After(200, 10));
-            Assert.That(() => StatsCollector.GcNumPinnedObjects.Value, Is.GreaterThan(0).After(200, 10));
+                Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("0").Value, Is.GreaterThan(0).After(200, 10));
+                Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("1").Value, Is.GreaterThan(0).After(200, 10));
+                Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("2").Value, Is.GreaterThan(0).After(200, 10));
+                Assert.That(() => StatsCollector.GcHeapSizeBytes.Labels("loh").Value, Is.GreaterThan(0).After(200, 10));
+                Assert.That(() => StatsCollector.GcNumPinnedObjects.Value, Is.GreaterThan(0).After(200, 10));
+            }
         }
 
         [Test]
