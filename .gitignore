@@ -37,3 +37,4 @@ obj/
 
 # Rider
 .idea/
+BenchmarkDotNet.Artifacts/
