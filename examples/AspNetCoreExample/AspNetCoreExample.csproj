@@ -1,22 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-    <PropertyGroup Condition=" $(Configuration.EndsWith('V2')) ">
-        <PromMajorVersion>2</PromMajorVersion>
-        <DefineConstants>$(DefineConstants);PROMV2</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" $(Configuration.EndsWith('V3'))  ">
-        <PromMajorVersion>3</PromMajorVersion>
-        <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
-    </PropertyGroup>
-
+    <Import Project="../../src/Common.csproj"/>
     <PropertyGroup>
-        <PromMajorVersion Condition="$(PromMajorVersion) == ''">3</PromMajorVersion>
         <TargetFramework>netcoreapp3.0</TargetFramework>
-        <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
-        <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="$(PromMajorVersion) == '3'">
-        <PackageReference Include="prometheus-net.AspNetCore" Version="3.2.1" />
+        <PackageReference Include="prometheus-net.AspNetCore" Version="3.1.2" />
     </ItemGroup>
 
     <ItemGroup Condition="$(PromMajorVersion) == '2'">
