@@ -1,11 +1,7 @@
+using Prometheus.DotNetRuntime.StatsCollectors.Util;
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Linq;
-using Prometheus.DotNetRuntime.StatsCollectors;
-using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
 namespace Prometheus.DotNetRuntime
 {
@@ -24,32 +20,28 @@ namespace Prometheus.DotNetRuntime
             _collector = collector;
             _errorHandler = errorHandler;
             _enableDebugging = enableDebugging;
-            
+
             if (_enableDebugging)
             {
                 _eventTypeCounts ??= Metrics.CreateCounter($"dotnet_debug_events_total", "The total number of .NET diagnostic events processed", "collector_name", "event_source_name", "event_name");
                 _cpuConsumed ??= Metrics.CreateCounter("dotnet_debug_cpu_seconds_total", "The total CPU time consumed by processing .NET diagnostic events (does not include the CPU cost to generate the events)", "collector_name", "event_source_name", "event_name");
                 _nameSnakeCase = collector.GetType().Name.ToSnakeCase();
             }
-            
-            EnableEventSources(collector);
+            EventSourceCreated += OnEventSourceCreated;
         }
-        
+
         internal bool StartedReceivingEvents { get; private set; }
 
-        private void EnableEventSources(IEventSourceStatsCollector forCollector)
+        private void OnEventSourceCreated(object sender, EventSourceCreatedEventArgs e)
         {
-            EventSourceCreated += (sender, e) =>
+            var es = e.EventSource;
+            if (es.Guid == _collector.EventSourceGuid)
             {
-                var es = e.EventSource;
-                if (es.Guid == forCollector.EventSourceGuid)
-                {
-                    EnableEvents(es, forCollector.Level, forCollector.Keywords);
-                    StartedReceivingEvents = true;
-                }
-            };
+                EnableEvents(es, _collector.Level, _collector.Keywords);
+                StartedReceivingEvents = true;
+            }
         }
-        
+
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
             var sp = new Stopwatch();
@@ -60,7 +52,7 @@ namespace Prometheus.DotNetRuntime
                     _eventTypeCounts.Labels(_nameSnakeCase, eventData.EventSource.Name, eventData.EventName).Inc();
                     sp.Restart();
                 }
-                
+
                 _collector.ProcessEvent(eventData);
 
                 if (_enableDebugging)
@@ -73,6 +65,12 @@ namespace Prometheus.DotNetRuntime
             {
                 _errorHandler(e);
             }
+        }
+
+        public override void Dispose()
+        {
+            EventSourceCreated -= OnEventSourceCreated;
+            base.Dispose();
         }
     }
 }
