@@ -7,6 +7,8 @@
     <PropertyGroup Condition=" $(Configuration.EndsWith('V3'))  ">
         <PromMajorVersion>3</PromMajorVersion>
         <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>prometheus-net.DotNetRuntime.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -28,8 +30,6 @@
         <LangVersion>8</LangVersion>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>1701;1702;CS1591;</NoWarn>
-        <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>prometheus-net.DotNetRuntime.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
@@ -54,11 +54,11 @@
     </PropertyGroup>
     
     <ItemGroup Condition="$(PromMajorVersion) == '3'">
-        <PackageReference Include="prometheus-net" Version="3.1.2" />
+        <PackageReference Include="prometheus-net" Version="3.5.0" />
     </ItemGroup>
 
     <ItemGroup Condition="$(PromMajorVersion) == '2'">
-        <PackageReference Include="prometheus-net" Version="3.5.0" />
+        <PackageReference Include="prometheus-net" Version="2.1.3" />
     </ItemGroup>
 
 </Project>
