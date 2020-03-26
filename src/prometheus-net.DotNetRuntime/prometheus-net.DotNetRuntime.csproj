@@ -58,7 +58,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="$(PromMajorVersion) == '2'">
-        <PackageReference Include="prometheus-net" Version="2.1.3" />
+        <PackageReference Include="prometheus-net" Version="3.5.0" />
     </ItemGroup>
 
 </Project>
