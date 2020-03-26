@@ -1,11 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup Condition=" $(Configuration.EndsWith('V3'))  ">
-        <PromMajorVersion>3</PromMajorVersion>
-        <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
-    </PropertyGroup>
     
     <PropertyGroup>
         <PromMajorVersion Condition="$(PromMajorVersion) == ''">3</PromMajorVersion>
+        <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
         <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
