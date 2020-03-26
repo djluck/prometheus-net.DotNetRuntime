@@ -1,16 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup Condition=" $(Configuration.EndsWith('V2')) ">
-        <PromMajorVersion>2</PromMajorVersion>
-        <DefineConstants>$(DefineConstants);PROMV2</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" $(Configuration.EndsWith('V3'))  ">
-        <PromMajorVersion>3</PromMajorVersion>
-        <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
-    </PropertyGroup>
     
     <PropertyGroup>
         <PromMajorVersion Condition="$(PromMajorVersion) == ''">3</PromMajorVersion>
+        <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
         <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
@@ -22,17 +14,15 @@
             Exposes .NET core runtime metrics (GC, JIT, lock contention, thread pool) using the prometheus-net package.
         </Description>
         <PackageLicense>https://github.com/djluck/prometheus-net.DotNetRuntime/blob/master/LICENSE.txt</PackageLicense>
-        <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
+        <Configurations>DebugV3;ReleaseV3</Configurations>
         <Platforms>AnyCPU</Platforms>
-        <TargetFrameworks>netcoreapp2.2;netcoreapp3.0;netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
         <LangVersion>8</LangVersion>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>1701;1702;CS1591;</NoWarn>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>prometheus-net.DotNetRuntime.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Collections.Immutable" Version="1.6.0" />
-    </ItemGroup>
 
     <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
         <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
@@ -43,20 +33,12 @@
         <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseV2' ">
-      <DocumentationFile>bin\ReleaseV2\prometheus-net.DotNetRuntime.xml</DocumentationFile>
-    </PropertyGroup>
-
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseV3' ">
       <DocumentationFile>bin\ReleaseV3\prometheus-net.DotNetRuntime.xml</DocumentationFile>
     </PropertyGroup>
     
     <ItemGroup Condition="$(PromMajorVersion) == '3'">
         <PackageReference Include="prometheus-net" Version="3.5.0" />
-    </ItemGroup>
-
-    <ItemGroup Condition="$(PromMajorVersion) == '2'">
-        <PackageReference Include="prometheus-net" Version="2.1.3" />
     </ItemGroup>
 
 </Project>
