@@ -16,17 +16,13 @@
         <PackageLicense>https://github.com/djluck/prometheus-net.DotNetRuntime/blob/master/LICENSE.txt</PackageLicense>
         <Configurations>DebugV3;ReleaseV3</Configurations>
         <Platforms>AnyCPU</Platforms>
-        <TargetFrameworks>netcoreapp2.2;netcoreapp3.0;netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
         <LangVersion>8</LangVersion>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>1701;1702;CS1591;</NoWarn>
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>prometheus-net.DotNetRuntime.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Collections.Immutable" Version="1.6.0" />
-    </ItemGroup>
 
     <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
         <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>

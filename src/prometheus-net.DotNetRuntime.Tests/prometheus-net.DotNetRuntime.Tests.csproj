@@ -16,8 +16,6 @@
         <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
         <Platforms>AnyCPU</Platforms>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>prometheus-net.DotNetRuntime.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>
