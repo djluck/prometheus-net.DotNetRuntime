@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1062
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "prometheus-net.DotNetRuntime", "src\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntime.csproj", "{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{31AD912F-A1DC-434A-8C8D-049F4BBD67D4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreExample", "examples\AspNetCoreExample\AspNetCoreExample.csproj", "{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "prometheus-net.DotNetRuntimeStrongV3", "src\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntimeStrongV3.csproj", "{8D2B905C-C2BB-4264-B187-B921E481B49C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,14 +43,6 @@ Global
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.ReleaseV2|Any CPU.Build.0 = ReleaseV2|Any CPU
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.ReleaseV3|Any CPU.ActiveCfg = ReleaseV3|Any CPU
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.ReleaseV3|Any CPU.Build.0 = ReleaseV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.DebugV2|Any CPU.ActiveCfg = DebugV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.DebugV2|Any CPU.Build.0 = DebugV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.DebugV3|Any CPU.ActiveCfg = DebugV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.DebugV3|Any CPU.Build.0 = DebugV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.ReleaseV2|Any CPU.ActiveCfg = ReleaseV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.ReleaseV2|Any CPU.Build.0 = ReleaseV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.ReleaseV3|Any CPU.ActiveCfg = ReleaseV3|Any CPU
-		{8D2B905C-C2BB-4264-B187-B921E481B49C}.ReleaseV3|Any CPU.Build.0 = ReleaseV3|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
