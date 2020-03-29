@@ -8,6 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{31
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreExample", "examples\AspNetCoreExample\AspNetCoreExample.csproj", "{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "src\Benchmarks\Benchmarks.csproj", "{DD607E45-45AD-4F9D-9102-82BD99E49BEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		ReleaseV2|Any CPU = ReleaseV2|Any CPU
@@ -40,6 +42,12 @@ Global
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.ReleaseV2|Any CPU.Build.0 = ReleaseV2|Any CPU
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.ReleaseV3|Any CPU.ActiveCfg = ReleaseV3|Any CPU
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.ReleaseV3|Any CPU.Build.0 = ReleaseV3|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.ReleaseV2|Any CPU.ActiveCfg = ReleaseV2|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.ReleaseV2|Any CPU.Build.0 = ReleaseV2|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.ReleaseV3|Any CPU.ActiveCfg = ReleaseV3|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.ReleaseV3|Any CPU.Build.0 = ReleaseV3|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.DebugV2|Any CPU.ActiveCfg = DebugV2|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.DebugV3|Any CPU.ActiveCfg = DebugV3|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636} = {31AD912F-A1DC-434A-8C8D-049F4BBD67D4}
