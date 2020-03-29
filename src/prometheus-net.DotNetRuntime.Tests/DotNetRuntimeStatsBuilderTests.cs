@@ -43,12 +43,15 @@ namespace Prometheus.DotNetRuntime.Tests
         [Test]
         public void WithCustomCollector_will_not_register_the_same_collector_twice()
         {
+            var expectedCollector = new GcStatsCollector();
             var builder = DotNetRuntimeStatsBuilder
                 .Customize()
                 .WithGcStats()
-                .WithCustomCollector(new GcStatsCollector());
+                .WithCustomCollector(expectedCollector);
 
             Assert.That(builder.StatsCollectors.Count, Is.EqualTo(1));
+            Assert.That(builder.StatsCollectors.TryGetValue(new GcStatsCollector(), out var actualColector), Is.True);
+            Assert.That(actualColector, Is.SameAs(expectedCollector));
         }
 
         [Test]

@@ -1,85 +1,48 @@
 ﻿using System;
-using System.Diagnostics.Tracing;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Mathematics;
+using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
+using Benchmarks.Benchmarks;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
-using Prometheus.DotNetRuntime.StatsCollectors.Util;
 
 namespace Benchmarks
 {
     public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            var p = new Prometheus.MetricServer(12203);
-            p.Start();
-
-            var collector = DotNetRuntimeStatsBuilder.Default().StartCollecting();
-            
-
-            var tasks = Enumerable.Range(1, 2_000_000)
-                .Select(_ => Task.Run(() => 1))
-                .ToArray();
-            
-            var b = new byte[1024 * 1000];
-            var b2 = new byte[1024 * 1000];
-            var b3 = new byte[1024 * 1000];
-
-            Task.WaitAll(tasks);
-
-            Console.WriteLine("Done");
-            Console.ReadLine();
-            
-            return;
-            BenchmarkRunner.Run<TestBenchmark>(
+            BenchmarkSwitcher.FromTypes(new []{typeof(BaselineBenchmark), typeof(NoSamplingBenchmark), typeof(DefaultBenchmark)}).RunAllJoined(
                 DefaultConfig.Instance
                     .With(
-                        Job.Core
-                            .WithLaunchCount(1)
-                            .WithIterationTime(TimeInterval.FromMilliseconds(200))
-                            .With(Platform.X64)
-                            .With(Jit.RyuJit)
+                        new Job()
+                            .With(RunStrategy.Monitoring)
+                            .WithLaunchCount(3)
+                            .WithWarmupCount(1)
+                            .WithIterationTime(TimeInterval.FromSeconds(10))
+                            .WithCustomBuildConfiguration("ReleaseV3")
+                            .WithOutlierMode(OutlierMode.DontRemove)
                     )
+                    .With(MemoryDiagnoser.Default)
+                    .With(HardwareCounter.TotalCycles)
             );
-        }
-     
-        public class TestBenchmark
-        {
-            private TimeSpan t1 = TimeSpan.FromSeconds(1);
-            private TimeSpan t2 = TimeSpan.FromSeconds(60);
-            private long l1 = 1l;
-            private long l2 = 60;
-	
-            [Benchmark]
-            public TimeSpan TestAddition() => t1 + t2;
-
-
-            [Benchmark]
-            [MethodImpl(MethodImplOptions.NoOptimization)]
-            public long TestAdditionLong() => l1 + l2;
-
-            [Benchmark]
-            [MethodImpl(MethodImplOptions.NoOptimization)]
-            public long TestInterlockedIncLong() => Interlocked.Increment(ref l1);
-	
-            private EventPairTimer<int> timer = new EventPairTimer<int>(1, 2, x => x.EventId, SampleEvery.OneEvent);
-
-            private EventWrittenEventArgs eventArgs;
-
-            public TestBenchmark()
-            {
-                eventArgs = (EventWrittenEventArgs)Activator.CreateInstance(typeof(EventWrittenEventArgs), BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.CreateInstance, (Binder) null, new object[] {null}, null);
-            }
-          
         }
     }
 }

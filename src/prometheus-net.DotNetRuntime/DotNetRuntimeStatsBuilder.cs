@@ -95,7 +95,7 @@ namespace Prometheus.DotNetRuntime
             /// </param>
             public Builder WithThreadPoolSchedulingStats(double[] histogramBuckets = null, SampleEvery sampleRate = SampleEvery.TenEvents)
             {
-                StatsCollectors.Add(new ThreadPoolSchedulingStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets, sampleRate));
+                StatsCollectors.AddOrReplace(new ThreadPoolSchedulingStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets, sampleRate));
                 return this;
             }
 
@@ -105,7 +105,7 @@ namespace Prometheus.DotNetRuntime
             /// </summary>
             public Builder WithThreadPoolStats()
             {
-                StatsCollectors.Add(new ThreadPoolStatsCollector());
+                StatsCollectors.AddOrReplace(new ThreadPoolStatsCollector());
                 return this;
             }
 
@@ -118,7 +118,7 @@ namespace Prometheus.DotNetRuntime
             /// </param>
             public Builder WithContentionStats(SampleEvery sampleRate = SampleEvery.TwoEvents)
             {
-                StatsCollectors.Add(new ContentionStatsCollector(sampleRate));
+                StatsCollectors.AddOrReplace(new ContentionStatsCollector(sampleRate));
                 return this;
             }
 
@@ -134,7 +134,7 @@ namespace Prometheus.DotNetRuntime
             /// </param>
             public Builder WithJitStats(SampleEvery sampleRate = SampleEvery.TenEvents)
             {
-                StatsCollectors.Add(new JitStatsCollector(sampleRate));
+                StatsCollectors.AddOrReplace(new JitStatsCollector(sampleRate));
                 return this;
             }
 
@@ -145,13 +145,13 @@ namespace Prometheus.DotNetRuntime
             /// <param name="histogramBuckets">Buckets for the GC collection and pause histograms</param>
             public Builder WithGcStats(double[] histogramBuckets = null)
             {
-                StatsCollectors.Add(new GcStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets));
+                StatsCollectors.AddOrReplace(new GcStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets));
                 return this;
             }
 
             public Builder WithCustomCollector(IEventSourceStatsCollector statsCollector)
             {
-                StatsCollectors.Add(statsCollector);
+                StatsCollectors.AddOrReplace(statsCollector);
                 return this;
             }
 

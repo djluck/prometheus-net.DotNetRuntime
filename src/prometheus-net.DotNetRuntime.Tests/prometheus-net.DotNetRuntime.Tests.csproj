@@ -1,19 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup Condition=" $(Configuration.EndsWith('V2')) ">
-        <PromMajorVersion>2</PromMajorVersion>
-        <DefineConstants>$(DefineConstants);PROMV2</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" $(Configuration.EndsWith('V3'))  ">
-        <PromMajorVersion>3</PromMajorVersion>
-        <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
-    </PropertyGroup>
+    <Import Project="../Common.csproj"/>
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <RootNamespace>Prometheus.DotNetRuntime.Tests</RootNamespace>
-        <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
         <Platforms>AnyCPU</Platforms>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
@@ -28,13 +19,4 @@
     <ItemGroup>
       <ProjectReference Include="..\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntime.csproj" />
     </ItemGroup>
-
-    <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
-      <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" $(Configuration.StartsWith('Debug')) ">
-      <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
-      <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
-    </PropertyGroup>
 </Project>

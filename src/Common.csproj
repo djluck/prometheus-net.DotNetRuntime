@@ -1,0 +1,35 @@
+<Project>
+    <PropertyGroup Condition=" $(Configuration.EndsWith('V2')) ">
+        <PromMajorVersion>2</PromMajorVersion>
+        <DefineConstants>$(DefineConstants);PROMV2</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(Configuration.EndsWith('V3'))  ">
+        <PromMajorVersion>3</PromMajorVersion>
+        <DefineConstants>$(DefineConstants);PROMV3</DefineConstants>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PromMajorVersion Condition="$(PromMajorVersion) == ''">3</PromMajorVersion>
+        <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
+        <Platforms>AnyCPU</Platforms>
+        <LangVersion>8</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(Configuration.StartsWith('Release')) ">
+        <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(Configuration.StartsWith('Debug')) ">
+        <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+        <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    </PropertyGroup>
+    
+    <ItemGroup Condition="$(PromMajorVersion) == '3'">
+        <PackageReference Include="prometheus-net" Version="3.1.2" />
+    </ItemGroup>
+
+    <ItemGroup Condition="$(PromMajorVersion) == '2'">
+        <PackageReference Include="prometheus-net" Version="2.1.3" />
+    </ItemGroup>
+</Project>
