@@ -26,6 +26,7 @@ namespace AspNetCoreExample
                     .WithGcStats()
                     .WithJitStats()
                     .WithThreadPoolStats()
+                    .WithExceptionStats()
                     .WithErrorHandler(ex => Console.WriteLine("ERROR: " + ex.ToString()))
                     //.WithDebuggingMetrics(true);
                     .StartCollecting();
