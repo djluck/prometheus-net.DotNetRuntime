@@ -2,6 +2,7 @@ using NUnit.Framework;
 using Prometheus.DotNetRuntime.StatsCollectors;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
 {
@@ -17,8 +18,8 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         public void Will_measure_when_occurring_an_exception()
         {
             // arrange
-            var divider = 0;
-            var exceptionMessage = string.Empty;
+            int divider = 0;
+            string exceptionMessage = string.Empty;
 
             // act
             try
@@ -30,9 +31,8 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
                 exceptionMessage = ex.Message;
             }
 
-            // throwing exceptions are slower so please wait 300 ms.
-            Thread.Sleep(300);
-
+            // throwing exceptions are slower so please wait 20 ms.
+            Thread.Sleep(20);
             var value = StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value;
 
             // assert
@@ -51,14 +51,13 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             {
                 var result = 1 / divider;
             }
-            catch (DivideByZeroException ex)
+            catch (Exception ex)
             {
                 exceptionMessage = ex.Message;
             }
 
-            // throwing exceptions are slower so please wait 300 ms.
-            Thread.Sleep(300);
-
+            // throwing exceptions are slower so please wait 20 ms.
+            Thread.Sleep(20);
             var value = StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value;
 
             // assert
