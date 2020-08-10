@@ -38,7 +38,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         {
             if (e.EventId == EventIdExceptionThrown)
             {
-                ExceptionReasons.Labels((string)e.Payload[1]).Inc();
+                ExceptionReasons.Labels((string)e.Payload[0]).Inc();
             }
         }
     }

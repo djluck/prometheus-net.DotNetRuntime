@@ -28,15 +28,11 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             }
             catch (Exception ex)
             {
-                exceptionMessage = ex.Message;
+                exceptionMessage = ex.GetType().FullName;
             }
 
-            // throwing exceptions are slower so please wait 20 ms.
-            Thread.Sleep(20);
-            var value = StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value;
-
             // assert
-            Assert.That(value, Is.EqualTo(1d));
+            Assert.That(() => StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value, Is.EqualTo(1).After(100, 1000));
         }
 
         [Test]
@@ -47,21 +43,10 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             string exceptionMessage = string.Empty;
 
             // act
-            try
-            {
-                var result = 1 / divider;
-            }
-            catch (Exception ex)
-            {
-                exceptionMessage = ex.Message;
-            }
-
-            // throwing exceptions are slower so please wait 20 ms.
-            Thread.Sleep(20);
-            var value = StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value;
+            var result = 1 / divider;
 
             // assert
-            Assert.That(value, Is.EqualTo(0d));
+            Assert.That(() => StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value, Is.EqualTo(0).After(100, 1000));
         }
     }
 }
