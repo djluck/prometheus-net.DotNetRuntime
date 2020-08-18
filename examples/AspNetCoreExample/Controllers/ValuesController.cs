@@ -28,7 +28,14 @@ namespace AspNetCoreExample.Controllers
 
             var val = this.r.Next();
             CompileMe(() => val);
-            
+
+            try
+            {
+                var divide = 0;
+                var result = 1 / divide;
+            }
+            catch { }
+
             return new string[] {"value1" + this.r.Next(), "value2"+ this.r.Next()};
         }
 

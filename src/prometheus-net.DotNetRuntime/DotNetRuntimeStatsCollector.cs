@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 #if PROMV2
@@ -114,7 +115,8 @@ namespace Prometheus.DotNetRuntime
                     "target_framework",
                     "runtime_version",
                     "os_version",
-                    "process_architecture"
+                    "process_architecture",
+                    "gc_mode"
                 );
 
                 buildInfo.Labels(
@@ -122,7 +124,8 @@ namespace Prometheus.DotNetRuntime
                         Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName,
                         RuntimeInformation.FrameworkDescription,
                         RuntimeInformation.OSDescription,
-                        RuntimeInformation.ProcessArchitecture.ToString()
+                        RuntimeInformation.ProcessArchitecture.ToString(),
+                        GCSettings.IsServerGC ? "Server" : "Workstation"
                     )
                     .Set(1);
             }

@@ -28,7 +28,8 @@ namespace Prometheus.DotNetRuntime
                 .WithJitStats()
                 .WithThreadPoolSchedulingStats()
                 .WithThreadPoolStats()
-                .WithGcStats();
+                .WithGcStats()
+                .WithExceptionStats();
         }
 
         /// <summary>
@@ -146,6 +147,15 @@ namespace Prometheus.DotNetRuntime
             public Builder WithGcStats(double[] histogramBuckets = null)
             {
                 StatsCollectors.AddOrReplace(new GcStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets));
+                return this;
+            }
+
+            /// <summary>
+            /// Includes quantitative and qualitative metrics of exceptions thrown
+            /// </summary>
+            public Builder WithExceptionStats()
+            {
+                StatsCollectors.AddOrReplace(new ExceptionStatsCollector());
                 return this;
             }
 
