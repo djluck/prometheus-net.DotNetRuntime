@@ -32,18 +32,5 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             // assert
             Assert.That(() => StatsCollector.ExceptionCount.Labels("System.DivideByZeroException").Value, Is.EqualTo(1).After(100, 1000));
         }
-
-        [Test]
-        public void Will_measure_when_not_occurring_an_exception()
-        {
-            // arrange
-            int divider = 1;
-            
-            // act
-            var result = 1 / 1;
-
-            // assert
-            Assert.That(() => StatsCollector.ExceptionCount.CollectAllValues().Count(), Is.EqualTo(0).After(100, 1000));
-        }
     }
 }
