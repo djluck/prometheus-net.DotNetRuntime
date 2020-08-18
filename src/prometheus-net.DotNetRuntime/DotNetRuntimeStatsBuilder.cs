@@ -151,7 +151,7 @@ namespace Prometheus.DotNetRuntime
             }
 
             /// <summary>
-            /// Includes quantitative and qualitative metrics of exceptions thrown
+            /// Includes a breakdown of exceptions thrown labeled by type.
             /// </summary>
             public Builder WithExceptionStats()
             {

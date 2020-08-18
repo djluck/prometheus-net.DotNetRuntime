@@ -6,6 +6,7 @@ A plugin for the [prometheus-net](https://github.com/prometheus-net/prometheus-n
 - JIT compilations and JIT CPU consumption ratio
 - Thread pool size, scheduling delays and reasons for growing/ shrinking
 - Lock contention
+- Exceptions thrown, broken down by type
 
 These metrics are essential for understanding the peformance of any non-trivial application. Even if your application is well instrumented, you're only getting half the story- what the runtime is doing completes the picture.
 
@@ -36,6 +37,7 @@ IDisposable collector = DotNetRuntimeStatsBuilder
 	.WithThreadPoolSchedulingStats()
 	.WithThreadPoolStats()
 	.WithGcStats()
+	.WithExceptionStats()
 	.StartCollecting();
 ```
 

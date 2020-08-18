@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using Prometheus.DotNetRuntime.StatsCollectors;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,22 +18,19 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         [Test]
         public void Will_measure_when_occurring_an_exception()
         {
-            // arrange
-            int divider = 0;
-            string exceptionMessage = string.Empty;
-
             // act
+            var divider = 0;
+            
             try
             {
                 var result = 1 / divider;
             }
-            catch (Exception ex)
+            catch (System.DivideByZeroException divZeroEx)
             {
-                exceptionMessage = ex.GetType().FullName;
             }
 
             // assert
-            Assert.That(() => StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value, Is.EqualTo(1).After(100, 1000));
+            Assert.That(() => StatsCollector.ExceptionCount.Labels("System.DivideByZeroException").Value, Is.EqualTo(1).After(100, 1000));
         }
 
         [Test]
@@ -40,13 +38,12 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
         {
             // arrange
             int divider = 1;
-            string exceptionMessage = string.Empty;
-
+            
             // act
-            var result = 1 / divider;
+            var result = 1 / 1;
 
             // assert
-            Assert.That(() => StatsCollector.ExceptionReasons.Labels(exceptionMessage).Value, Is.EqualTo(0).After(100, 1000));
+            Assert.That(() => StatsCollector.ExceptionCount.CollectAllValues().Count(), Is.EqualTo(0).After(100, 1000));
         }
     }
 }

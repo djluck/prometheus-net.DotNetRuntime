@@ -5,12 +5,13 @@
         <RootNamespace>Prometheus.DotNetRuntime</RootNamespace>
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
-        <Version>$(PromMajorVersion).3.1</Version>
+        <!-- TODO use git versioning -->
+        <Version>$(PromMajorVersion).4.0</Version>
         <Authors>James Luck</Authors>
         <PackageTags>Prometheus prometheus-net IOnDemandCollector runtime metrics gc jit threadpool contention stats</PackageTags>
         <PackageProjectUrl>https://github.com/djluck/prometheus-net.DotNetRuntime</PackageProjectUrl>
         <Description>
-            Exposes .NET core runtime metrics (GC, JIT, lock contention, thread pool) using the prometheus-net package.
+            Exposes .NET core runtime metrics (GC, JIT, lock contention, thread pool, exceptions) using the prometheus-net package.
         </Description>
         <PackageLicense>https://github.com/djluck/prometheus-net.DotNetRuntime/blob/master/LICENSE.txt</PackageLicense>
         <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
