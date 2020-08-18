@@ -11,9 +11,9 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
     public class ExceptionStatsCollector : IEventSourceStatsCollector
     {
         private const int EventIdExceptionThrown = 80;
-        private const string LabelReason = "exception";
+        private const string LabelType = "type";
 
-        internal Counter ExceptionReasons { get; private set; }
+        internal Counter ExceptionCount { get; private set; }
 
         public Guid EventSourceGuid => DotNetRuntimeEventSource.Id;
 
@@ -22,10 +22,10 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
 
         public void RegisterMetrics(MetricFactory metrics)
         {
-            ExceptionReasons = metrics.CreateCounter(
-                "dotnet_exception_reasons_total",
-                "Reasons that led to an exception",
-                LabelReason
+            ExceptionCount = metrics.CreateCounter(
+                "dotnet_exceptions_total",
+                "Count of exceptions broken down by type",
+                LabelType
             );
         }
 
@@ -38,7 +38,7 @@ namespace Prometheus.DotNetRuntime.StatsCollectors
         {
             if (e.EventId == EventIdExceptionThrown)
             {
-                ExceptionReasons.Labels((string)e.Payload[0]).Inc();
+                ExceptionCount.Labels((string)e.Payload[0]).Inc();
             }
         }
     }
