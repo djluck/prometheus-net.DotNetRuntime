@@ -1,9 +1,6 @@
 using NUnit.Framework;
 using Prometheus.DotNetRuntime.StatsCollectors;
 using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
 {
@@ -23,9 +20,9 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             
             try
             {
-                var result = 1 / divider;
+                _ = 1 / divider;
             }
-            catch (System.DivideByZeroException divZeroEx)
+            catch (DivideByZeroException)
             {
             }
 
