@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Prometheus.DotNetRuntime.StatsCollectors.Util
 {
@@ -14,14 +13,8 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         public static Dictionary<TEnum, string> MapEnumToLabelValues<TEnum>()
             where TEnum : Enum
         {
-            var dict = new Dictionary<TEnum, string>();
-
-            foreach (var v in Enum.GetValues(typeof(TEnum)).Cast<TEnum>())
-            {
-                dict.Add(v, Enum.GetName(typeof(TEnum), v).ToSnakeCase());
-            }
-
-            return dict;
+            return Enum.GetValues(typeof(TEnum)).Cast<TEnum>()
+                .ToDictionary(k => k, v => Enum.GetName(typeof(TEnum), v).ToSnakeCase());
         }
     }
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 
 namespace Prometheus.DotNetRuntime.StatsCollectors.Util
