@@ -7,28 +7,25 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
         public static string ToSnakeCase(this string str)
         {
             var sb = new StringBuilder();
-            bool lastCharWasUpper = false;
-            bool isFirst = true;
+            var lastCharWasUpper = false;
             
-            foreach (var c in str)
+            for(var i = 0 ; i < str.Length ; i++)
             {
-                if (char.IsUpper(c))
+                if (char.IsUpper(str[i]))
                 {
-                    if (!lastCharWasUpper && !isFirst)
+                    if (!lastCharWasUpper && i != 0)
                     {
                         sb.Append("_");
                     }
 
-                    sb.Append(char.ToLower(c));
+                    sb.Append(char.ToLower(str[i]));
                     lastCharWasUpper = true;
                 }
                 else
                 {
-                    sb.Append(c);
+                    sb.Append(str[i]);
                     lastCharWasUpper = false;
                 }
-
-                isFirst = false;
             }
 
             return sb.ToString();

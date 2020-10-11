@@ -63,7 +63,7 @@ namespace Prometheus.DotNetRuntime.Tests.StatsCollectors.IntegrationTests
             
             // Why -1? The first thread will not contend the lock 
             const int numLocksContended = numThreads - 1;
-            Assert.That(() => StatsCollector.ContentionTotal.Value, Is.EqualTo(numLocksContended).After(200, 10));
+            Assert.That(() => StatsCollector.ContentionTotal.Value, Is.GreaterThanOrEqualTo(numLocksContended).After(200, 10));
             
             // Pattern of expected contention times is: 50ms, 100ms, 150ms, etc.
             var expectedDelay = TimeSpan.FromMilliseconds(Enumerable.Range(1, numLocksContended).Aggregate(sleepForMs, (acc, next) => acc + (sleepForMs * next)));

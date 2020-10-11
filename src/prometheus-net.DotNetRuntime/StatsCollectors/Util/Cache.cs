@@ -100,12 +100,11 @@ namespace Prometheus.DotNetRuntime.StatsCollectors.Util
             
             foreach (var key in _cache.Keys.ToArray())
             {
-                CacheValue<TValue> value;
-                if (!_cache.TryGetValue(key, out value))
+                if (!_cache.TryGetValue(key, out var value))
                     continue;
                 
                 if (value.TimeStamp < earliestAddedTime)
-                    _cache.TryRemove(key, out var _);
+                    _cache.TryRemove(key, out _);
             }
         }
     }
