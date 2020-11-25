@@ -6,7 +6,7 @@
         <AssemblyName>prometheus-net.DotNetRuntime</AssemblyName>
         <PackageId>prometheus-net.DotNetRuntime</PackageId>
         <!-- TODO use git versioning -->
-        <Version>$(PromMajorVersion).4.0</Version>
+        <Version>$(PromMajorVersion).4.1</Version>
         <Authors>James Luck</Authors>
         <PackageTags>Prometheus prometheus-net IOnDemandCollector runtime metrics gc jit threadpool contention stats</PackageTags>
         <PackageProjectUrl>https://github.com/djluck/prometheus-net.DotNetRuntime</PackageProjectUrl>
@@ -16,8 +16,7 @@
         <PackageLicense>https://github.com/djluck/prometheus-net.DotNetRuntime/blob/master/LICENSE.txt</PackageLicense>
         <Configurations>ReleaseV2;DebugV2;DebugV3;ReleaseV3</Configurations>
         <Platforms>AnyCPU</Platforms>
-        <TargetFrameworks>netcoreapp2.2;netcoreapp3.0;netstandard2.1</TargetFrameworks>
-        <LangVersion>8</LangVersion>
+        <TargetFrameworks>netcoreapp2.2;netcoreapp3.0;netstandard2.1;net5.0</TargetFrameworks>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>1701;1702;CS1591;</NoWarn>
     </PropertyGroup>
