@@ -24,7 +24,7 @@
         <PackageReference Include="System.Collections.Immutable" Version="1.6.0" />
     </ItemGroup>
        
-    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseV2' || ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseV2'">
       <DocumentationFile>bin\ReleaseV2\prometheus-net.DotNetRuntime.xml</DocumentationFile>
     </PropertyGroup>
 
