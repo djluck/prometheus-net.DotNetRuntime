@@ -6,20 +6,16 @@ on:
   pull_request:
 
 jobs:
-  test-net50:
+  test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-dotnet@v1
+    - name: Setup .NET Core 3.1	
+      uses: actions/setup-dotnet@v1	
+      with:	
+        dotnet-version: 3.1.x
+    - name: Setup .NET Core 5.0
+      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.201'
-    - run: dotnet test -c "Debug" -f net5.0
-    
-  test-netcoreapp31:
-    runs-on: ubuntu-latest
-    steps:
+        dotnet-version: 5.0.x
     - uses: actions/checkout@v1
-    - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.407'
-    - run: dotnet test -c "Debug" -f netcoreapp31
+    - run: dotnet test -c "Debug"
