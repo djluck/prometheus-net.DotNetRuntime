@@ -6,11 +6,20 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-net5.0:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.100'
+        dotnet-version: '5.0.201'
+    - run: dotnet test -c "Debug"
+    
+  test-netcoreapp3.1:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.407'
     - run: dotnet test -c "Debug"
