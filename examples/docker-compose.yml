@@ -1,0 +1,83 @@
+# With thanks to https://github.com/stefanprodan/dockprom for this excellent template for providing prom + grafana
+version: '2.1'
+
+networks:
+  monitor-net:
+    driver: bridge
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+
+services:
+
+  prometheus:
+    image: prom/prometheus:v2.22.0
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    expose:
+      - 9090
+    ports:
+      - 9090:9090
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  grafana:
+    image: grafana/grafana:7.3.1
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+      
+  aspexample:
+    build:
+      context: ../
+      dockerfile: examples/AspNetCoreExample/Dockerfile
+    expose:
+      - 5000
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      # Additional vars that can be set to tweak behaviour
+      #- Example__UseDefaultMetrics=true
+      #- Example__EnableMetrics=false
+      #- Example__UseDebuggingMetrics=true
+      #- Example__RecycleEvery=00:10:00
+      #- Example__MinThreadPoolSize=100
+    ports:
+      - 5001:5000
+    mem_limit: "200M"
+    networks:
+      - monitor-net
+      
+  bombardier:
+    image: alpine/bombardier
+    command: -c 25 -d 1000h -r 100 -t 15s http://aspexample:5000/api/simulate
+    # High intensity
+    # command: -c 1000 -d 1000h -r 2000 -t 10s http://aspexample:5000/api/simulate
+    networks:
+      - monitor-net
