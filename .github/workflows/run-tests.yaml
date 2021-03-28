@@ -13,7 +13,7 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.201'
-    - run: dotnet test -c "Debug"
+    - run: dotnet test -c "Debug" -f net5.0
     
   test-netcoreapp31:
     runs-on: ubuntu-latest
@@ -22,4 +22,4 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.407'
-    - run: dotnet test -c "Debug"
+    - run: dotnet test -c "Debug" -f netcoreapp31
