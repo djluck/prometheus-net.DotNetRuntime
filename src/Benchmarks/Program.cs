@@ -11,7 +11,6 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Mathematics;
 using BenchmarkDotNet.Order;
@@ -21,6 +20,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Perfolizer.Horology;
+using Perfolizer.Mathematics.OutlierDetection;
 using Prometheus.DotNetRuntime;
 
 namespace Benchmarks
@@ -29,20 +30,33 @@ namespace Benchmarks
     {
         public static void Main(string[] args)
         {
-            BenchmarkSwitcher.FromTypes(new []{typeof(BaselineBenchmark), typeof(NoSamplingBenchmark), typeof(DefaultBenchmark)}).RunAllJoined(
+            BenchmarkRunner.Run<EventCounterParserBenchmark>(
                 DefaultConfig.Instance
                     .With(
                         new Job()
-                            .With(RunStrategy.Monitoring)
-                            .WithLaunchCount(3)
+                            .With(RunStrategy.Throughput)
                             .WithWarmupCount(1)
-                            .WithIterationTime(TimeInterval.FromSeconds(10))
-                            .WithCustomBuildConfiguration("ReleaseV3")
+                            .WithIterationTime(TimeInterval.FromMilliseconds(300))
+                            .WithMaxIterationCount(30)
+                            .WithCustomBuildConfiguration("Release")
                             .WithOutlierMode(OutlierMode.DontRemove)
                     )
                     .With(MemoryDiagnoser.Default)
-                    .With(HardwareCounter.TotalCycles)
             );
+            // BenchmarkSwitcher.FromTypes(new []{typeof(BaselineBenchmark), typeof(NoSamplingBenchmark), typeof(DefaultBenchmark)}).RunAllJoined(
+            //     DefaultConfig.Instance
+            //         .With(
+            //             new Job()
+            //                 .With(RunStrategy.Monitoring)
+            //                 .WithLaunchCount(3)
+            //                 .WithWarmupCount(1)
+            //                 .WithIterationTime(TimeInterval.FromSeconds(10))
+            //                 .WithCustomBuildConfiguration("Release")
+            //                 .WithOutlierMode(OutlierMode.DontRemove)
+            //         )
+            //         .With(MemoryDiagnoser.Default)
+            //         .With(HardwareCounter.TotalCycles)
+            // );
         }
     }
 }

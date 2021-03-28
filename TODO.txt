@@ -1,0 +1,247 @@
+# Summary for V4
+Main goals of next release:
+- As this library is now in greater use, improve the currently poor baseline performance
+- Fix longstanding issues (e.g. ThreadPoolStatsCollector doesn't work)
+- Make use of all events currently being collected by current level of verbosity
+- Keep compatability with .NET core v3
+- Remove support for v2 of prometheus-net
+- Fix long-running perf bug
+
+### v4.0.0 release
+- Figure out release process
+- Fix build pipeline (no need for v2/ v3 anymore)
+- Perf comparison when running default and all between v2 + v3
+- Long running perf test vs v3
+- Review PR
+- Update README (note on performance, choosing levels, metrics exposed?, example docker-compose stack, recycling, compatibility with prior configuration)
+- Perform metric diff vs v3
+	- Use all vs default (to note what metrics are not present by default)
+	- Will be useful to note what metrics are missing now
+- Write release notes (dropped support for prom v2)
+- Publish prerelease version
+
+### v4.1+ release
+- DNS events
+- HTTP events
+- So many events in .net 5!
+- Counter-based metrics for contention + JIT
+- Review all existing events and look for improvements/ updates made in .NET 5
+- Rethink sampling implmentation (consumption is actually single-threaded, what about circular buffer idea and time is either actual time or estimated max time)
+- Review if V3 JIT/ Contention was as wrong as V4. If not, fix later. Otherwise Fix JIT + Contention CPU bug (measurements for time are way off, even with sampling off)
+
+## Splitting up work
+Need to focus on getting event counters in and reducing overhead by default.
+1. Reduce overhead + sane defaults
+2. Improve documentation (generate documentation automatically?)
+3. Improve data collected
+4. Dynamic switching
+5. Advanced collection? e.g. GCSampledObjectAllocation perhaps?
+
+## IObservable
+- Separate out event producers and metric producers
+- EventProducers vs EventConsumers
+- EventListeners
+- MetricProducers
+- IEventProducers
+- Metric producerss
+- Different observables for different
+
+## Example GC metric producer
+- Focusing on allocation rate
+- will consume IObservable<RuntimeMetrics>, GcEvents.Verbose
+- Example impl. for GcEvents.Info:
+```
+public class Info{
+	public IObservable<AllocTick> AlocTick { get; set; }
+}
+```
+
+- Subscribe to both observables
+- Enabled/ Disabled is good- allows us to set up metrics correctly
+
+
+
+## Improving performance
+Main cost involves the .NET runtime producing events, not processing them so we need to be smarter about when we enable the more verbose event sources. Ideas include:
+- Using event counters
+- Dynamic switching of metric sources
+
+### Using event counters
+Event counters should place a much lower stress on the runtime- using these could definitely help.
+See https://docs.microsoft.com/en-us/dotnet/core/diagnostics/event-counters#sample-code.
+
+Counter implementation concerns:
+- Rate is fixed ahead of time (min frequency = 1 sec)
+- Counter values are collected separately from other events (need to provide mechanism for other profilers to consume counter values)
+- Perhaps event listeners consume counters?
+
+### Dynamic switching of metric sources
+Overall could be three levels of detail for most sources, ordered in terms of perf impact (low -> high):
+1. Counters
+2. Events (Warning) 
+2. Events (info)
+3. Events (verbose)
+
+Levels are hierarchial- enabling a more detailed level implies the others are enabled.
+
+#### Ordering
+Could start at a more verbose level and have rules to selectively enable less verbose levels. Or start at the least verbose and move towards more verbose.
+
+#### Changing verbosity
+Reasons to change include:
+- A period of time has elapsed
+- A counter value has changed
+- Number of events being processed has changed
+
+Depending on the information a user wishes to obtain, switching between these three verbosity levels could be useful. Scenarios include:
+- Disabling more detailed collectors by default
+- Enabling/ disabling collectors as conditions change (e.g. a lot of exceptions are thrown then disable high-impact collection, enabling detailed thread stats when thread pool queue times increase)
+
+```
+DotNetRuntimeStatsBuilder.LowestImpact.StartCollecting();
+DotNetRuntimeStatsBuilder.AllCollectors.StartCollecting();
+
+// This should be good enough to start, right?
+Gc.DefaultLevel(Info)
+	// Should we allow multiple conditions? This could help solve the problem of different evaluation timeframes
+	.Use.Verbose.While(x => x.allocRate > x, evalPeriod: 5 second)
+	.Use.Verbose.While(x => x.startTime < DateTime.Now.AddMinutes(2))
+	.Use.Info.While(x => x.EventsSec > 100)
+	.Use.Counters.While(x => true)
+
+#### Goals of builder
+- Good documentation of what metrics can be collected at each level 
+- Well-typed- should not be allowed to enable a level that offers no benefit
+- Easy to use!
+	
+// Why are we doing this?
+// To control performance impact of collectors
+// To enable more detail when needed
+// TraceInfo, TraceVerbose
+// Scenarios: 
+// JIT: on startup, when a lot of JIT is happening (e.g. num methods > x)
+// Contention: when number of locks contended > 5, when number of locks isn't greater than 5
+// GC: when LOH > blah size (enable LOH allocs)
+// ThreadPool: When queue length > x, num threads > Environment.ProcessorCount
+// Exceptions: When num exceptions> blah
+
+// Profiles:
+// Perf concious- I don't want performance to be destroyed by monitoring
+// Detail oriented- I want to have more insight into why my application is degrading
+// Balanced- I want more detail as long as it's not impacting the perf of my application
+
+
+
+// Levels: Info, Verbose
+DotNetRuntimeStatsBuilder.Customize()
+	.With.Gc
+	.With.Jit
+	.With.ThreadPoolStats
+		.Use.Detailed.When(x => x.Blah)
+		.Use.Detailed.Always()
+		.Use.Level(Level.Info)
+		.Use.Normal.When(x => x.NumEventsSec > 100)
+	.With.ThreadPoolLatencyStats
+	
+Use.Gc
+	.And.Jit
+		.Use.Level.Info.Always // same effect as And
+	.And.ThreadPoolStats
+		.EnableLevel.Detailed.When(x => x).DisableWhen(x => x)
+		.EnableLevel.Info.When(x => x).DisableWhen(x => x)
+	.And.
+	
+	
+```
+
+We are considering moving from low -> high, what about the other way around?
+Start profiling with a lot of detail
+
+Context:
+- Time since app start
+- Time since level last enabled
+- Rate of events (disable level only)
+- Relevant counters
+- 
+
+How often will these be evaluated? 
+- Counter values are evaluated, enabling higher levels of detail
+- Profilers are disabled when rate is too high or no interesting events are happening
+- Need a control mechanism that says "after enabling/ disabling, do not disable/ enable for x period of time"
+- Enable.When(<condition>).While(<condition>)For.AtLeast()/AtMost()
+- .Default(level)
+  .Use(level).When(x => x.).Until(x => x.EventsSec > 100)
+  .Use(level).When(x => x.)
+  .Use(Counters).When();
+- What do conditions do?
+	- Check rate/ sec of events (this can only be known while the thingo is active)
+	- Check event counter values
+- How often are they evaluated? 
+What is the long-term impact of starting and stopping?
+
+
+
+IDEAS:
+- State change based on repetitive duration of time
+- State change based on value of event counters (e.g. bytes jitted > x for y seconds)
+- State change based on rate of events received (e.g. > 100/sec, then disable events for x seconds)
+- Premade profiles (e.g. perf vs investigation)
+- Need to track what collectors are enabled and at what level of verbosity
+- Will need to completely redesign the construction of event listeners
+- Evaluate every collection (perhaps this will be too long?)
+- Counters have to have their refresh frequency specified up front (default to 1 sec?)
+
+- Counters will be updated at a fixed frequency, we can use this to inform judgments
+- We need to take samples of the queue length via histogram
+- E.g. thread pool, enable detail after we see a queue build up of y
+- Collectors should be ignorant of verbosity changes (managed externally)
+- Collectors need to expose additional information (e.g. counter values to base judgments on)
+
+
+
+## Collector improvements
+Overall:
+- Make full use of all events captured by current verbosity levels
+- Upgrade to the latest version of events
+
+### GC
+- Track finalizer processing times
+- Track mark events (GcMarkWithType) to track the types of roots that hold memory
+- Track pinned object heap size (heapstats v3)
+- Track allocations more effeciently (don't use Verbose keyword). Can we support this in V3 of .NET core?
+- GCHeapSurvivalAndMovementKeyword to track reserved sizes of heaps and positions
+- Look into GCGlobalHeapHistory_V3?
+- Track compactions?
+
+### Execeptions
+- Track times spent throwing + time spent handling events
+- Offer fallback to the count event counter
+- No need to use Information by default- can track with Error Level
+
+### JIT
+- _ilBytesJittedCounter to track bytes spent
+- Offer to track greater verbosity?
+
+### RuntimeInformation?
+
+### [EventSource()] in coreclr
+Possible ideas:
+- HttpClient (time queued, connection count, etc)
+- Dependency injection
+- DNS lookups
+
+Ideas to reduce CPU consumpton:
+- don't track JIT on startup
+- don't track TP stats unless unhealthy (e.g. too many queued tasks)
+- don't track contention stats unless lots of contention
+- don't track exceptions unless count is 
+
+For each source of info, offer options to:
+- increase verbosity (more detailed log events, e.g. alloc by heap)
+- upgrade from event counters -> event traces 
+- downgrade from event traces -> counters
+- disable collectors entirely 
+
+# Collector improvements
+## GC
+- Collect heap info

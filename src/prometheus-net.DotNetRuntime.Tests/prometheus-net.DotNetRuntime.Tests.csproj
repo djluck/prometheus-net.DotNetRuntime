@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="../Common.csproj"/>
+    <Import Project="../Common.csproj" />
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <RootNamespace>Prometheus.DotNetRuntime.Tests</RootNamespace>
         <Platforms>AnyCPU</Platforms>
@@ -10,13 +10,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fasterflect.Netstandard" Version="1.0.9" />
-        <PackageReference Include="nunit" Version="3.11.0" />
-        <PackageReference Include="NUnit3TestAdapter" Version="3.11.0" />
+        <PackageReference Include="fasterflect" Version="3.0.0" />
+        <PackageReference Include="nunit" Version="3.13.1" />
+        <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntime.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Metrics\Producers" />
     </ItemGroup>
 </Project>

@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Prometheus.DotNetRuntime.StatsCollectors;
-using Prometheus.DotNetRuntime.StatsCollectors.Util;
-#if PROMV2
-using TCollectorRegistry = Prometheus.Advanced.DefaultCollectorRegistry;
-#elif PROMV3
-using TCollectorRegistry = Prometheus.CollectorRegistry;
-#endif
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Prometheus.DotNetRuntime.EventListening;
+using Prometheus.DotNetRuntime.EventListening.Parsers;
+using Prometheus.DotNetRuntime.Metrics;
+using Prometheus.DotNetRuntime.Metrics.Producers;
+using Prometheus.DotNetRuntime.Metrics.Producers.Util;
 
 namespace Prometheus.DotNetRuntime
 {
@@ -17,16 +18,14 @@ namespace Prometheus.DotNetRuntime
     public static class DotNetRuntimeStatsBuilder
     {
         /// <summary>
-        /// Includes all available .NET runtime metrics by default. Call <see cref="Builder.StartCollecting()"/>
-        /// to begin collecting metrics.
+        /// Includes all .NET runtime metrics that can be collected at the <see cref="CaptureLevel.Counters"/> capture level,
+        /// ensuring minimal impact on performance. Call <see cref="Builder.StartCollecting()"/> to begin collecting metrics.
         /// </summary>
         /// <returns></returns>
         public static Builder Default()
         {
             return Customize()
                 .WithContentionStats()
-                .WithJitStats()
-                .WithThreadPoolSchedulingStats()
                 .WithThreadPoolStats()
                 .WithGcStats()
                 .WithExceptionStats();
@@ -46,9 +45,17 @@ namespace Prometheus.DotNetRuntime
 
         public class Builder
         {
-            private Action<Exception> _errorHandler;
-            private bool _debugMetrics;
-            internal HashSet<IEventSourceStatsCollector> StatsCollectors { get; } = new HashSet<IEventSourceStatsCollector>(new TypeEquality<IEventSourceStatsCollector>());
+            private readonly DotNetRuntimeStatsCollector.Options _options = new();
+            internal HashSet<ListenerRegistration> ListenerRegistrations { get; } = new();
+            private readonly IServiceCollection _services = new ServiceCollection();
+
+            public Builder()
+            {
+                // For now, we include runtime events by default. May make this customizable in the future.
+                ListenerRegistrations.Add(ListenerRegistration.Create(CaptureLevel.Counters, sp => new RuntimeEventParser() { RefreshIntervalSeconds = 1}));
+
+                // TODO what if we want to support extensibility? e.g. add your own custom metric generator
+            }
 
             /// <summary>
             /// Finishes configuration and starts collecting .NET runtime metrics. Returns a <see cref="IDisposable"/> that
@@ -57,11 +64,7 @@ namespace Prometheus.DotNetRuntime
             /// <returns></returns>
             public IDisposable StartCollecting()
             {
-#if PROMV2
-                return StartCollecting(TCollectorRegistry.Instance);
-#elif PROMV3
-                return StartCollecting(Metrics.DefaultRegistry);
-#endif
+                return StartCollecting(Prometheus.Metrics.DefaultRegistry);
             }
 
             /// <summary>
@@ -70,56 +73,57 @@ namespace Prometheus.DotNetRuntime
             /// </summary>
             /// <param name="registry">Registry where metrics will be collected</param>
             /// <returns></returns>
-            public IDisposable StartCollecting(TCollectorRegistry registry)
+            public IDisposable StartCollecting(CollectorRegistry registry)
             {
-                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(StatsCollectors.ToImmutableHashSet(), _errorHandler, _debugMetrics, registry);
-#if PROMV2
-                registry.RegisterOnDemandCollectors(runtimeStatsCollector);
-#elif PROMV3
-                runtimeStatsCollector.RegisterMetrics(registry);
-                registry.AddBeforeCollectCallback(runtimeStatsCollector.UpdateMetrics);
-#endif
-
+                var serviceProvider = BuildServiceProvider();
+                var runtimeStatsCollector = new DotNetRuntimeStatsCollector(serviceProvider, registry, _options);
                 return runtimeStatsCollector;
-            }
-
-            /// <summary>
-            /// Include metrics around the volume of work scheduled on the worker thread pool
-            /// and the scheduling delays.
-            /// </summary>
-            /// <param name="histogramBuckets">Buckets for the scheduling delay histogram</param>
-            /// <param name="sampleRate">
-            /// The sampling rate for thread pool scheduling events. A lower sampling rate reduces memory use
-            /// but reduces the accuracy of metrics produced (as a percentage of events are discarded).
-            /// If your application achieves a high level of throughput (thousands of work items scheduled per second on
-            /// the thread pool), it's recommend to reduce the sampling rate even further.
-            /// </param>
-            public Builder WithThreadPoolSchedulingStats(double[] histogramBuckets = null, SampleEvery sampleRate = SampleEvery.TenEvents)
-            {
-                StatsCollectors.AddOrReplace(new ThreadPoolSchedulingStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets, sampleRate));
-                return this;
             }
 
             /// <summary>
             /// Include metrics around the size of the worker and IO thread pools and reasons
             /// for worker thread pool changes.
             /// </summary>
-            public Builder WithThreadPoolStats()
+            public Builder WithThreadPoolStats(CaptureLevel level = CaptureLevel.Counters, ThreadPoolMetricsProducer.Options options = null)
             {
-                StatsCollectors.AddOrReplace(new ThreadPoolStatsCollector());
+                try
+                {
+                    if (level != CaptureLevel.Counters)
+                        ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(level, sp => new ThreadPoolEventParser()));
+                }
+                catch (UnsupportedEventParserLevelException ex)
+                {
+                    throw UnsupportedCaptureLevelException.CreateWithCounterSupport(ex);
+                }
+
+                _services.TryAddSingletonEnumerable<IMetricProducer, ThreadPoolMetricsProducer>();
+                _services.AddSingleton(options ?? new ThreadPoolMetricsProducer.Options());
+
                 return this;
             }
 
             /// <summary>
             /// Include metrics around volume of locks contended.
             /// </summary>
+            /// <param name="level"></param>
             /// <param name="sampleRate">
             /// The sampling rate for contention events (defaults to 100%). A lower sampling rate reduces memory use
             /// but reduces the accuracy of metrics produced (as a percentage of events are discarded).
             /// </param>
-            public Builder WithContentionStats(SampleEvery sampleRate = SampleEvery.TwoEvents)
+            public Builder WithContentionStats(CaptureLevel level = CaptureLevel.Counters, SampleEvery sampleRate = SampleEvery.TwoEvents)
             {
-                StatsCollectors.AddOrReplace(new ContentionStatsCollector(sampleRate));
+                try
+                {
+                    if (level != CaptureLevel.Counters)
+                        ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Informational, sp => new ContentionEventParser(sampleRate)));
+                }
+                catch (UnsupportedEventParserLevelException ex)
+                {
+                    throw new UnsupportedCaptureLevelException(ex);
+                }
+
+                _services.TryAddSingletonEnumerable<IMetricProducer, ContentionMetricsProducer>();
+
                 return this;
             }
 
@@ -135,7 +139,9 @@ namespace Prometheus.DotNetRuntime
             /// </param>
             public Builder WithJitStats(SampleEvery sampleRate = SampleEvery.TenEvents)
             {
-                StatsCollectors.AddOrReplace(new JitStatsCollector(sampleRate));
+                ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Verbose, sp => new JitEventParser(sampleRate)));
+                _services.TryAddSingletonEnumerable<IMetricProducer, JitMetricsProducer>();
+
                 return this;
             }
 
@@ -143,25 +149,46 @@ namespace Prometheus.DotNetRuntime
             /// Include metrics recording the frequency and duration of garbage collections/ pauses, heap sizes and
             /// volume of allocations.
             /// </summary>
+            /// <param name="atLevel"></param>
             /// <param name="histogramBuckets">Buckets for the GC collection and pause histograms</param>
-            public Builder WithGcStats(double[] histogramBuckets = null)
+            public Builder WithGcStats(CaptureLevel atLevel = CaptureLevel.Counters, double[] histogramBuckets = null)
             {
-                StatsCollectors.AddOrReplace(new GcStatsCollector(histogramBuckets ?? Constants.DefaultHistogramBuckets));
+                try
+                {
+                    if (atLevel != CaptureLevel.Counters)
+                        ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(atLevel, sp => new GcEventParser()));
+                }
+                catch (UnsupportedEventParserLevelException ex)
+                {
+                    throw new UnsupportedCaptureLevelException(ex);
+                }
+
+                _services.TryAddSingletonEnumerable<IMetricProducer, GcMetricsProducer>();
+
+                var opts = new GcMetricsProducer.Options();
+                opts.HistogramBuckets ??= histogramBuckets;
+                
+                _services.AddSingleton(opts);
+
                 return this;
             }
 
             /// <summary>
-            /// Includes a breakdown of exceptions thrown labeled by type.
+            /// Include metrics that measure the number of exceptions thrown.
             /// </summary>
-            public Builder WithExceptionStats()
+            public Builder WithExceptionStats(CaptureLevel captureLevel = CaptureLevel.Counters)
             {
-                StatsCollectors.AddOrReplace(new ExceptionStatsCollector());
-                return this;
-            }
+                try
+                {
+                    if (captureLevel != CaptureLevel.Counters)
+                        ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(captureLevel, sp => new ExceptionEventParser()));
+                }
+                catch (UnsupportedEventParserLevelException ex)
+                {
+                    throw new UnsupportedCaptureLevelException(ex);
+                }
 
-            public Builder WithCustomCollector(IEventSourceStatsCollector statsCollector)
-            {
-                StatsCollectors.AddOrReplace(statsCollector);
+                _services.TryAddSingletonEnumerable<IMetricProducer, ExceptionMetricsProducer>();
                 return this;
             }
 
@@ -173,9 +200,39 @@ namespace Prometheus.DotNetRuntime
             /// <returns></returns>
             public Builder WithErrorHandler(Action<Exception> handler)
             {
-                _errorHandler = handler;
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+                
+                _options.ErrorHandler = handler;
                 return this;
             }
+
+#if NET5_0
+            /// <summary>
+            /// Specifies a custom interval to recycle collectors. Defaults to 1 day.
+            /// </summary>
+            /// <remarks>
+            /// The event collector mechanism in .NET core can in some circumstances degrade performance over time (gradual increased CPU consumption over many hours/ days).
+            /// Recycling the event collectors is a workaround, preventing CPU exhaustion (see https://github.com/dotnet/runtime/issues/43985#issuecomment-793187345 for more info).
+            /// During a recycle, existing metrics will not disappear/ reset but will not be updated for a short period (should be at most a couple of seconds). 
+            /// </remarks>
+            /// <param name="interval"></param>
+            /// <returns></returns>
+            public Builder RecycleCollectorsEvery(TimeSpan interval)
+            {
+#if DEBUG
+                // In debug mode, allow more aggressive recycling times to verify recycling works correctly
+                var min = TimeSpan.FromSeconds(10);
+#else
+                var min = TimeSpan.FromMinutes(10);
+#endif
+                if (interval < min)
+                    throw new ArgumentOutOfRangeException(nameof(interval), $"Interval must be greater than {min}. If collectors are recycled too frequently, metrics cannot be collected accurately.");
+                
+                _options.RecycleListenersEvery = interval;
+                return this;
+            }
+#endif
 
             /// <summary>
             /// Include additional debugging metrics. Should NOT be used in production unless debugging
@@ -190,20 +247,35 @@ namespace Prometheus.DotNetRuntime
             /// <returns></returns>
             public Builder WithDebuggingMetrics(bool generateDebugMetrics)
             {
-                _debugMetrics = generateDebugMetrics;
+                _options.EnabledDebuggingMetrics = generateDebugMetrics;
                 return this;
             }
-
-            internal class TypeEquality<T> : IEqualityComparer<T>
+            
+            private ServiceProvider BuildServiceProvider()
             {
-                public bool Equals(T x, T y)
-                {
-                    return x.GetType() == y.GetType();
-                }
+                RegisterDefaultConsumers(_services);
 
-                public int GetHashCode(T obj)
+                // Add the set of event listeners configured..
+                _services.AddSingleton<ISet<ListenerRegistration>, HashSet<ListenerRegistration>>(_ => ListenerRegistrations);
+                
+                // ..and register the instance of each listener
+                foreach (var r in ListenerRegistrations)
+                    r.RegisterServices(_services);
+
+                return _services.BuildServiceProvider();
+            }
+
+            internal static void RegisterDefaultConsumers(IServiceCollection services)
+            {
+                var interfaceType = typeof(Consumes<>);
+                var concreteType = typeof(EventConsumer<>);
+                
+                var eventTypes = EventParserTypes.GetEventParsers()
+                    .SelectMany(EventParserTypes.GetEventInterfaces);
+
+                foreach (var t in eventTypes)
                 {
-                    return obj.GetType().GetHashCode();
+                    services.AddSingleton(interfaceType.MakeGenericType(t), concreteType.MakeGenericType(t));
                 }
             }
         }

@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestPlatform.Common.Telemetry;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-#if PROMV2
-using Prometheus.Advanced;
-#endif
-using Prometheus.DotNetRuntime.StatsCollectors;
+using Prometheus.DotNetRuntime.EventListening.Parsers;
 
 namespace Prometheus.DotNetRuntime.Tests
 {
@@ -25,7 +22,7 @@ namespace Prometheus.DotNetRuntime.Tests
             // arrange
             using (DotNetRuntimeStatsBuilder.Default().StartCollecting())
             {
-                await Assert_Expected_Stats_Are_Present_In_Registry(GetDefaultRegistry());
+                await Assert_Expected_Stats_Are_Present_In_Registry(Prometheus.Metrics.DefaultRegistry);
             }
         }
 
@@ -38,20 +35,6 @@ namespace Prometheus.DotNetRuntime.Tests
             {
                 await Assert_Expected_Stats_Are_Present_In_Registry(registry);
             }
-        }
-        
-        [Test]
-        public void WithCustomCollector_will_not_register_the_same_collector_twice()
-        {
-            var expectedCollector = new GcStatsCollector();
-            var builder = DotNetRuntimeStatsBuilder
-                .Customize()
-                .WithGcStats()
-                .WithCustomCollector(expectedCollector);
-
-            Assert.That(builder.StatsCollectors.Count, Is.EqualTo(1));
-            Assert.That(builder.StatsCollectors.TryGetValue(new GcStatsCollector(), out var actualColector), Is.True);
-            Assert.That(actualColector, Is.SameAs(expectedCollector));
         }
 
         [Test]
@@ -66,14 +49,15 @@ namespace Prometheus.DotNetRuntime.Tests
         [Test]
         public async Task StartCollecting_Allows_A_New_Collector_To_Run_After_Disposing_A_Previous_Collector()
         {
-            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
+            var registry = NewRegistry();
+            using (DotNetRuntimeStatsBuilder.Default().StartCollecting(registry))
             {
-                await Assert_Expected_Stats_Are_Present_In_Registry(GetDefaultRegistry());
+                await Assert_Expected_Stats_Are_Present_In_Registry(registry);
             }
 
-            using (DotNetRuntimeStatsBuilder.Customize().StartCollecting())
+            using (DotNetRuntimeStatsBuilder.Default().StartCollecting(registry))
             {
-                await Assert_Expected_Stats_Are_Present_In_Registry(GetDefaultRegistry());
+                await Assert_Expected_Stats_Are_Present_In_Registry(registry);
             }
         }
 
@@ -134,12 +118,53 @@ namespace Prometheus.DotNetRuntime.Tests
             }
         }
 
+        [Test]
+        public void RegisterDefaultConsumers_Can_Register_Default_Consumers_For_All_Parsers()
+        {
+            // arrange
+            var services = new ServiceCollection();
+            
+            // act
+            DotNetRuntimeStatsBuilder.Builder.RegisterDefaultConsumers(services);
+            var sp = services.BuildServiceProvider();
+            
+            // assert
+            var infoConsumer = sp.GetService<Consumes<GcEventParser.Events.Info>>();
+            Assert.That(infoConsumer.Enabled, Is.False);
+            Assert.That(infoConsumer.Events, Is.Null);
+
+            Assert.That(sp.GetService<Consumes<GcEventParser.Events.Verbose>>, Is.Not.Null);
+            Assert.That(sp.GetService<Consumes<ExceptionEventParser.Events.Error>>, Is.Not.Null);
+            Assert.That(sp.GetService<Consumes<RuntimeEventParser.Events.Counters>>, Is.Not.Null);
+        }
+
+        [Test]
+        public void Cannot_Register_Tasks_At_Unsupported_Levels()
+        {
+            var ex = Assert.Throws<UnsupportedCaptureLevelException>(() => DotNetRuntimeStatsBuilder.Customize().WithGcStats(CaptureLevel.Errors));
+            Assert.That(ex.SpecifiedLevel, Is.EqualTo(CaptureLevel.Errors));
+            Assert.That(ex.SupportedLevels, Is.EquivalentTo(new []{ CaptureLevel.Verbose, CaptureLevel.Informational}));
+
+            ex = Assert.Throws<UnsupportedCaptureLevelException>(() => DotNetRuntimeStatsBuilder.Customize().WithThreadPoolStats(CaptureLevel.Verbose));
+            Assert.That(ex.SpecifiedLevel, Is.EqualTo(CaptureLevel.Verbose));
+            Assert.That(ex.SupportedLevels, Is.EquivalentTo(new []{ CaptureLevel.Counters, CaptureLevel.Informational}));
+        }
+        
+        [Test]
+        public async Task Debugging_Metrics_Works_Correctly()
+        {
+            // arrange
+            var registry = NewRegistry();
+            
+            using (DotNetRuntimeStatsBuilder.Default().WithDebuggingMetrics(true).StartCollecting(registry))
+            {
+                await Assert_Expected_Stats_Are_Present_In_Registry(registry, shouldContainDebug: true);
+            }
+        }
+        
         private async Task Assert_Expected_Stats_Are_Present_In_Registry(
-#if PROMV2
-            DefaultCollectorRegistry registry
-#else
-            CollectorRegistry registry
-#endif
+            CollectorRegistry registry,
+            bool shouldContainDebug = false
         )
         {
             // arrange
@@ -156,37 +181,24 @@ namespace Prometheus.DotNetRuntime.Tests
 
                     // Some basic assertions to check that the output of our stats collectors is present
                     Assert.That(content, Contains.Substring("dotnet_threadpool"));
-                    Assert.That(content, Contains.Substring("dotnet_jit"));
                     Assert.That(content, Contains.Substring("dotnet_gc"));
                     Assert.That(content, Contains.Substring("dotnet_contention"));
                     Assert.That(content, Contains.Substring("dotnet_build_info"));
                     Assert.That(content, Contains.Substring("process_cpu_count"));
+
+                    if (shouldContainDebug)
+                    {
+                        Assert.That(content, Contains.Substring("dotnet_debug_event"));
+                    }
+                    else
+                        StringAssert.DoesNotContain("dotnet_debug", content);
                 }
             }
         }
-        
-#if PROMV2
-        private DefaultCollectorRegistry NewRegistry()
-        {
-            return new DefaultCollectorRegistry();
-        }
 
-        private DefaultCollectorRegistry GetDefaultRegistry()
-        {
-            return DefaultCollectorRegistry.Instance;
-        }
-        
-#elif PROMV3
         private CollectorRegistry NewRegistry()
         {
-            return Metrics.NewCustomRegistry();
+            return Prometheus.Metrics.NewCustomRegistry();
         }
-
-        private CollectorRegistry GetDefaultRegistry()
-        {
-            return Metrics.DefaultRegistry;
-        }
-#endif
-        
     }
 }

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <LangVersion>9</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntime.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="fasterflect" Version="3.0.0" />
+      <PackageReference Include="Grynwald.MarkdownGenerator" Version="2.5.34" />
+      <PackageReference Include="MarkdownGenerator" Version="1.0.2" />
+    </ItemGroup>
+
+</Project>

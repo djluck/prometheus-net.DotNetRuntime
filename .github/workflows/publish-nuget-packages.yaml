@@ -4,24 +4,16 @@ on:
   release:
     types: [published, prereleased]
 
-jobs:
-  publish-v2:
+jobs: 
+  publish:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.100'
-    - run: dotnet pack src/prometheus-net.DotNetRuntime --include-symbols -c "ReleaseV2" --output "build/"
-    - run: dotnet nuget push "build/prometheus-net.DotNetRuntime.2.*.symbols.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s "https://api.nuget.org/v3/index.json" -n true
-
-        
-  publish-v3:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '5.0.100'
-    - run: dotnet pack src/prometheus-net.DotNetRuntime --include-symbols -c "ReleaseV3" --output "build/"
-    - run: dotnet nuget push "build/prometheus-net.DotNetRuntime.3.*.symbols.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s "https://api.nuget.org/v3/index.json" -n true
+    - run: arrTag=(${GITHUB_REF//\// })
+    - run: VERSION="${arrTag[2]}"
+    - run: echo "Version is $VERSION"
+    - run: dotnet pack src/prometheus-net.DotNetRuntime --include-symbols -c "Release" -p:PackageVersion=$VERSION  --output "build/"
+    - run: dotnet nuget push "build/prometheus-net.DotNetRuntime.*.symbols.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s "https://api.nuget.org/v3/index.json" -n true
