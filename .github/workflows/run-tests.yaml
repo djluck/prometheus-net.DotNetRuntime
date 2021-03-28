@@ -19,4 +19,4 @@ jobs:
         dotnet-version: 5.0.x
     - uses: actions/checkout@v1
     # This test constantly passes localy (windows + linux) but fails in the test environment. Don't have the time/ inclination to figure out why this is right now..
-    - run: dotnet test -c "Debug" -filter Name!=When_blocking_work_is_executed_on_the_thread_pool_then_thread_pool_delays_are_measured
+    - run: dotnet test -c "Debug" --filter Name!=When_blocking_work_is_executed_on_the_thread_pool_then_thread_pool_delays_are_measured
