@@ -5,7 +5,7 @@ using Prometheus.DotNetRuntime.EventListening.Parsers.Util;
 
 namespace Prometheus.DotNetRuntime.EventListening.Parsers
 {
-    public class KestrelEventParser : IEventParser<KestrelEventParser>, KestrelEventParser.Events.Info, KestrelEventParser.Events.Verbose
+    public class KestrelEventParser : IEventParser<KestrelEventParser>, KestrelEventParser.Events.Info
     {
         private readonly SamplingRate _samplingRate;
         private const int
@@ -60,12 +60,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 event Action<ConnectionStartEvent> ConnectionStart;
                 event Action<ConnectionStopEvent> ConnectionStop;
             }
-
-            public interface Verbose : IVerboseEvents
-            {
-                
-            }
-
+            
             public class ConnectionStartEvent
             {
                 public static readonly ConnectionStartEvent Instance = new();
@@ -75,13 +70,14 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 //public string LocalEndPoint { get; private set; }
                 //public string RemoteEndPoint { get; private set; }
 
-                //public static ConnectionStartEvent ParseFrom(EventWrittenEventArgs e)
-                //{
-                //    Instance.ConnectionId = (string)e.Payload[0];
-                //    Instance.LocalEndPoint = (string)e.Payload[1];
-                //    Instance.RemoteEndPoint = (string) e.Payload[2];
-                //    return Instance;
-                //}
+                public static ConnectionStartEvent ParseFrom(EventWrittenEventArgs e)
+                {
+                    //Instance.ConnectionId = (string)e.Payload[0];
+                    //Instance.LocalEndPoint = (string)e.Payload[1];
+                    //Instance.RemoteEndPoint = (string)e.Payload[2];
+                    return Instance;
+                }
+
             }
 
             public class ConnectionStopEvent
