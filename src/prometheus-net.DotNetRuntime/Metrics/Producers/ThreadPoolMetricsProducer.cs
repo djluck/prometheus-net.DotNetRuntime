@@ -34,10 +34,10 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
                 return;
             
             NumThreads = metrics.CreateGauge("dotnet_threadpool_num_threads", "The number of active threads in the thread pool");
-            _runtimeCounters.Events.ThreadPoolThreadCount += e => NumThreads.Set(e.Mean);
+            _runtimeCounters.Events.ConnectionCount += e => NumThreads.Set(e.Mean);
                 
             Throughput = metrics.CreateCounter("dotnet_threadpool_throughput_total", "The total number of work items that have finished execution in the thread pool");
-            _runtimeCounters.Events.ThreadPoolCompletedItemsCount += e => Throughput.Inc(e.IncrementedBy);
+            _runtimeCounters.Events.ConnectionCompletedItemsCount += e => Throughput.Inc(e.IncrementedBy);
 
             QueueLength = metrics.CreateHistogram("dotnet_threadpool_queue_length",
                 "Measures the queue length of the thread pool. Values greater than 0 indicate a backlog of work for the threadpool to process.",
