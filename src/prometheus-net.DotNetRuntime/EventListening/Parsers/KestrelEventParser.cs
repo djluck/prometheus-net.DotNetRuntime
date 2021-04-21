@@ -71,17 +71,17 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 public static readonly ConnectionStartEvent Instance = new();
                 private ConnectionStartEvent() { }
 
-                public string ConnectionId { get; private set; }
-                public string LocalEndPoint { get; private set; }
-                public string RemoteEndPoint { get; private set; }
+                //public string ConnectionId { get; private set; }
+                //public string LocalEndPoint { get; private set; }
+                //public string RemoteEndPoint { get; private set; }
 
-                public static ConnectionStartEvent ParseFrom(EventWrittenEventArgs e)
-                {
-                    Instance.ConnectionId = (string)e.Payload[0];
-                    Instance.LocalEndPoint = (string)e.Payload[1];
-                    Instance.RemoteEndPoint = (string) e.Payload[2];
-                    return Instance;
-                }
+                //public static ConnectionStartEvent ParseFrom(EventWrittenEventArgs e)
+                //{
+                //    Instance.ConnectionId = (string)e.Payload[0];
+                //    Instance.LocalEndPoint = (string)e.Payload[1];
+                //    Instance.RemoteEndPoint = (string) e.Payload[2];
+                //    return Instance;
+                //}
             }
 
             public class ConnectionStopEvent
@@ -89,23 +89,23 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 private static readonly ConnectionStopEvent Instance = new();
                 private ConnectionStopEvent() { }
 
-                public string ConnectionId { get; private set; }
-                public string LocalEndPoint { get; private set; }
-                public string RemoteEndPoint { get; private set; }
+                //public string ConnectionId { get; private set; }
+                //public string LocalEndPoint { get; private set; }
+                //public string RemoteEndPoint { get; private set; }
 
-                public static ConnectionStopEvent ParseFrom(EventWrittenEventArgs e)
+                //public static ConnectionStopEvent ParseFrom(EventWrittenEventArgs e)
+                //{
+                //    Instance.ConnectionId = (string)e.Payload[0];
+                //    Instance.LocalEndPoint = (string)e.Payload[1];
+                //    Instance.RemoteEndPoint = (string)e.Payload[2];
+                //    return Instance;
+                //}
+
+                public TimeSpan ConnectionDuration { get; private set; }
+
+                public static ConnectionStopEvent GetFrom(TimeSpan connectionDuration)
                 {
-                    Instance.ConnectionId = (string)e.Payload[0];
-                    Instance.LocalEndPoint = (string)e.Payload[1];
-                    Instance.RemoteEndPoint = (string)e.Payload[2];
-                    return Instance;
-                }
-
-                public TimeSpan ContentionDuration { get; private set; }
-
-                public static ConnectionStopEvent GetFrom(TimeSpan contentionDuration)
-                {
-                    Instance.ContentionDuration = contentionDuration;
+                    Instance.ConnectionDuration = connectionDuration;
                     return Instance;
                 }
             }

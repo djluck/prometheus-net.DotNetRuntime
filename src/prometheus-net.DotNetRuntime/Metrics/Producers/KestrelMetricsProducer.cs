@@ -17,21 +17,23 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
             _runtimeCounters = runtimeCounters;
         }
 
-        internal Gauge NumThreads { get; private set; }
-        internal Counter Throughput { get; private set; }
-
+        internal Counter ConnectionSecondsTotal { get; private set; }
+        internal Counter ConnectionTotal { get; private set; }
+        
         public void RegisterMetrics(MetricFactory metrics)
         {
             if (!_kestrelInfo.Enabled && !_runtimeCounters.Enabled)
                 return;
 
-            NumThreads = metrics.CreateGauge("dotnet_num_connections", "The number of active connections");
-            _runtimeCounters.Events.ConnectionCount += e => NumThreads.Set(e.Count);
+            ConnectionTotal = metrics.CreateCounter("dotnet_kestrel_connection_total", "The number of kestrel connections");
+            _runtimeCounters.Events.MonitorLockContentionCount += e => ConnectionTotal.Inc(e.IncrementedBy);
 
-            Throughput = metrics.CreateCounter("dotnet_connections_throughput_total", "The total number of connections that have been made");
-            _runtimeCounters.Events.ConnectionCompletedItemsCount += e => Throughput.Inc(e.IncrementedBy);
+            if (_kestrelInfo.Enabled)
+            {
+                ConnectionSecondsTotal = metrics.CreateCounter("dotnet_kestrel_connection_seconds_total", "The total amount of time spent connected for requests");
+                _kestrelInfo.Events.ConnectionStop += e => ConnectionSecondsTotal.Inc(e.ConnectionDuration.TotalSeconds);
+            }
         }
-
 
         public void UpdateMetrics() { }
     }
