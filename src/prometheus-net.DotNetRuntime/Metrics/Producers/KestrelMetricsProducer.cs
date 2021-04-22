@@ -38,8 +38,8 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
             _kestrelInfo.Events.ConnectionStart += e => ConnectionTotal.Inc();
             _kestrelInfo.Events.ConnectionStart += e => NumConnectionThreads.Inc();
 
-            ConnectionSecondsTotal = metrics.CreateCounter("dotnet_kestrel_connection_seconds_total", "The total amount of time spent connected for requests");
-            _kestrelInfo.Events.ConnectionStop += e => ConnectionSecondsTotal.Inc(e.ConnectionDuration.TotalSeconds);
+            //ConnectionSecondsTotal = metrics.CreateCounter("dotnet_kestrel_connection_seconds_total", "The total amount of time spent connected for requests");
+            //_kestrelInfo.Events.ConnectionStop += e => ConnectionSecondsTotal.Inc(e.ConnectionDuration.TotalSeconds);
             _kestrelInfo.Events.ConnectionStop += e => NumConnectionThreads.Dec();
         }
 

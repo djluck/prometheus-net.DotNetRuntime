@@ -115,8 +115,8 @@ namespace Prometheus.DotNetRuntime
             {
                 try
                 {
-                    if (level != CaptureLevel.Counters)
-                        ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Informational, sp => new KestrelEventParser(sampleRate)));
+                    //if (level != CaptureLevel.Counters)
+                        ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Informational, sp => new KestrelEventParser()));
                 }
                 catch (UnsupportedEventParserLevelException ex)
                 {
