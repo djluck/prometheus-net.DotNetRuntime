@@ -7,7 +7,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
 {
     public class KestrelEventParser : IEventParser<KestrelEventParser>, KestrelEventParser.Events.Info
     {
-        //private readonly SamplingRate _samplingRate;
+        private readonly SamplingRate _samplingRate;
         private const int
             EventIdConnectionStart = 1,
             EventIdConnectionStop = 2,
@@ -17,7 +17,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
             EventIdTlsHandshakeStart = 8,
             EventIdTlsHandshakeStop = 9,
             EventIdTlsHandshakeFailed = 10;
-        //private readonly EventPairTimer<long> _eventPairTimer;
+        private readonly EventPairTimer<long> _eventPairTimer;
 
         public event Action<Events.ConnectionStartEvent> ConnectionStart;
         public event Action<Events.ConnectionStopEvent> ConnectionStop;
@@ -28,19 +28,34 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         public Guid EventSourceGuid => KestrelEventSource.Id;
         public EventKeywords Keywords => EventKeywords.None;
 
-        //public KestrelEventParser(SamplingRate samplingRate)
-        //{
-            //_samplingRate = samplingRate;
-            //_eventPairTimer = new EventPairTimer<long>(
-            //    EventIdConnectionStart,
-            //    EventIdConnectionStop,
-            //    x => x.OSThreadId,
-            //    samplingRate
-            //);
-        //}
+        public KestrelEventParser(SamplingRate samplingRate)
+        {
+            _samplingRate = samplingRate;
+            _eventPairTimer = new EventPairTimer<long>(
+                EventIdConnectionStart,
+                EventIdConnectionStop,
+                x => x.OSThreadId,
+                samplingRate
+            );
+        }
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {
+
+            switch (_eventPairTimer.TryGetDuration(e, out var duration))
+            {
+                case DurationResult.Start:
+                    ConnectionStart?.Invoke(Events.ConnectionStartEvent.Instance);
+                    break;
+
+                case DurationResult.FinalWithDuration:
+                    ConnectionStop?.InvokeManyTimes(_samplingRate.SampleEvery, Events.ConnectionStopEvent.GetFrom(duration));
+                    break;
+
+                default:
+                    break;
+            }
+
             if (e.EventId == EventIdConnectionStart)
             {
                 ConnectionStart?.Invoke(Events.ConnectionStartEvent.ParseFrom(e));
@@ -70,20 +85,6 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 ConnectionRejected?.Invoke(Events.ConnectionRejectedEvent.ParseFrom(e));
                 return;
             }
-            
-            //switch (_eventPairTimer.TryGetDuration(e, out var duration))
-            //{
-            //    case DurationResult.Start:
-            //        ConnectionStart?.Invoke(Events.ConnectionStartEvent.Instance);
-            //        return;
-
-            //    case DurationResult.FinalWithDuration:
-            //        ConnectionStop?.InvokeManyTimes(_samplingRate.SampleEvery, Events.ConnectionStopEvent.GetFrom(duration));
-            //        return;
-
-            //    default:
-            //        return;
-            //}
         }
 
         public static class Events
@@ -136,13 +137,13 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 //    return Instance;
                 //}
 
-                //public TimeSpan ConnectionDuration { get; private set; }
+                public TimeSpan ConnectionDuration { get; private set; }
 
-                //public static ConnectionStopEvent GetFrom(TimeSpan connectionDuration)
-                //{
-                //    Instance.ConnectionDuration = connectionDuration;
-                //    return Instance;
-                //}
+                public static ConnectionStopEvent GetFrom(TimeSpan connectionDuration)
+                {
+                    Instance.ConnectionDuration = connectionDuration;
+                    return Instance;
+                }
 
                 public static ConnectionStopEvent ParseFrom(EventWrittenEventArgs e)
                 {
