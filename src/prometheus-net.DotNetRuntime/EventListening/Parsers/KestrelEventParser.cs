@@ -17,7 +17,9 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
             EventIdTlsHandshakeStart = 8,
             EventIdTlsHandshakeStop = 9,
             EventIdTlsHandshakeFailed = 10;
-        private readonly EventPairTimer<long> _eventPairTimer;
+        // TODO: add eventPairTimer for Tls events
+        private readonly EventPairTimer<long> _eventPairTimerConnections;
+        private readonly EventPairTimer<long> _eventPairTimerRequests;
 
         public event Action<Events.ConnectionStartEvent> ConnectionStart;
         public event Action<Events.ConnectionStopEvent> ConnectionStop;
@@ -31,9 +33,15 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         public KestrelEventParser(SamplingRate samplingRate)
         {
             _samplingRate = samplingRate;
-            _eventPairTimer = new EventPairTimer<long>(
+            _eventPairTimerConnections = new EventPairTimer<long>(
                 EventIdConnectionStart,
                 EventIdConnectionStop,
+                x => x.OSThreadId,
+                samplingRate
+            );
+            _eventPairTimerRequests = new EventPairTimer<long>(
+                EventIdRequestStart,
+                EventIdRequestStop,
                 x => x.OSThreadId,
                 samplingRate
             );
@@ -41,15 +49,28 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {
-
-            switch (_eventPairTimer.TryGetDuration(e, out var duration))
+            switch (_eventPairTimerConnections.TryGetDuration(e, out var duration1))
             {
                 case DurationResult.Start:
                     ConnectionStart?.Invoke(Events.ConnectionStartEvent.Instance);
                     break;
 
                 case DurationResult.FinalWithDuration:
-                    ConnectionStop?.InvokeManyTimes(_samplingRate.SampleEvery, Events.ConnectionStopEvent.GetFrom(duration));
+                    ConnectionStop?.InvokeManyTimes(_samplingRate.SampleEvery, Events.ConnectionStopEvent.GetFrom(duration1));
+                    break;
+
+                default:
+                    break;
+            }
+
+            switch (_eventPairTimerRequests.TryGetDuration(e, out var duration2))
+            {
+                case DurationResult.Start:
+                    ConnectionStart?.Invoke(Events.ConnectionStartEvent.Instance);
+                    break;
+
+                case DurationResult.FinalWithDuration:
+                    ConnectionStop?.InvokeManyTimes(_samplingRate.SampleEvery, Events.ConnectionStopEvent.GetFrom(duration2));
                     break;
 
                 default:
@@ -169,6 +190,14 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
             {
                 private static readonly RequestStopEvent Instance = new();
                 private RequestStopEvent() { }
+
+                public TimeSpan RequestDuration { get; private set; }
+
+                public static RequestStopEvent GetFrom(TimeSpan requestDuration)
+                {
+                    Instance.RequestDuration = requestDuration;
+                    return Instance;
+                }
 
                 public static RequestStopEvent ParseFrom(EventWrittenEventArgs e)
                 {
