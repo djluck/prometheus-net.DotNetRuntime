@@ -21,16 +21,16 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
         
         private readonly Consumes<GcEventParser.Events.Info> _gcInfo;
         private readonly Consumes<GcEventParser.Events.Verbose> _gcVerbose;
-        private readonly Consumes<RuntimeEventParser.Events.Counters> _runtimeCounters;
+        private readonly Consumes<RuntimeEventParser.Events.CountersV3_0> _runtimeCounters;
         private readonly Ratio _gcCpuRatio = Ratio.ProcessTotalCpu();
         private readonly Ratio _gcPauseRatio = Ratio.ProcessTime();
-        private Options _options;
+        private readonly Options _options;
         
         public GcMetricsProducer(
             Options options,
             Consumes<GcEventParser.Events.Info> gcInfo,
             Consumes<GcEventParser.Events.Verbose> gcVerbose,
-            Consumes<RuntimeEventParser.Events.Counters> runtimeCounters)
+            Consumes<RuntimeEventParser.Events.CountersV3_0> runtimeCounters)
         {
             _options = options;
             _gcInfo = gcInfo;

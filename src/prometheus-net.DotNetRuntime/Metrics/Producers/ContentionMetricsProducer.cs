@@ -5,9 +5,9 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
     public class ContentionMetricsProducer : IMetricProducer
     {
         private readonly Consumes<ContentionEventParser.Events.Info> _contentionInfo;
-        private readonly Consumes<RuntimeEventParser.Events.Counters> _runtimeCounters;
+        private readonly Consumes<RuntimeEventParser.Events.CountersV3_0> _runtimeCounters;
 
-        public ContentionMetricsProducer(Consumes<ContentionEventParser.Events.Info> contentionInfo, Consumes<RuntimeEventParser.Events.Counters> runtimeCounters)
+        public ContentionMetricsProducer(Consumes<ContentionEventParser.Events.Info> contentionInfo, Consumes<RuntimeEventParser.Events.CountersV3_0> runtimeCounters)
         {
             _contentionInfo = contentionInfo;
             _runtimeCounters = runtimeCounters;
