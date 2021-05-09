@@ -135,7 +135,7 @@ namespace Prometheus.DotNetRuntime.Tests
 
             Assert.That(sp.GetService<Consumes<GcEventParser.Events.Verbose>>, Is.Not.Null);
             Assert.That(sp.GetService<Consumes<ExceptionEventParser.Events.Error>>, Is.Not.Null);
-            Assert.That(sp.GetService<Consumes<RuntimeEventParser.Events.Counters>>, Is.Not.Null);
+            Assert.That(sp.GetService<Consumes<RuntimeEventParser.Events.CountersV3_0>>, Is.Not.Null);
         }
 
         [Test]

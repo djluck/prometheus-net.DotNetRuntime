@@ -12,9 +12,9 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
         private readonly Dictionary<DotNetRuntimeEventSource.ThreadAdjustmentReason, string> _adjustmentReasonToLabel = LabelGenerator.MapEnumToLabelValues<DotNetRuntimeEventSource.ThreadAdjustmentReason>();
         private readonly Options _options;
         private readonly Consumes<ThreadPoolEventParser.Events.Info> _threadPoolInfo;
-        private readonly Consumes<RuntimeEventParser.Events.Counters> _runtimeCounters;
+        private readonly Consumes<RuntimeEventParser.Events.CountersV3_0> _runtimeCounters;
 
-        public ThreadPoolMetricsProducer(Options options, Consumes<ThreadPoolEventParser.Events.Info> threadPoolInfo, Consumes<RuntimeEventParser.Events.Counters> runtimeCounters)
+        public ThreadPoolMetricsProducer(Options options, Consumes<ThreadPoolEventParser.Events.Info> threadPoolInfo, Consumes<RuntimeEventParser.Events.CountersV3_0> runtimeCounters)
         {
             _options = options;
             _threadPoolInfo = threadPoolInfo;
