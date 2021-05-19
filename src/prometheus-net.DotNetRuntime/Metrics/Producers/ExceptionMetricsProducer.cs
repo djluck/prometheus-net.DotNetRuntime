@@ -5,10 +5,10 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
     public class ExceptionMetricsProducer : IMetricProducer
     {
         private readonly Consumes<ExceptionEventParser.Events.Error> _exceptionError;
-        private readonly Consumes<RuntimeEventParser.Events.Counters> _runtimeCounters;
+        private readonly Consumes<RuntimeEventParser.Events.CountersV3_0> _runtimeCounters;
         private const string LabelType = "type";
 
-        public ExceptionMetricsProducer(Consumes<ExceptionEventParser.Events.Error> exceptionError, Consumes<RuntimeEventParser.Events.Counters> runtimeCounters)
+        public ExceptionMetricsProducer(Consumes<ExceptionEventParser.Events.Error> exceptionError, Consumes<RuntimeEventParser.Events.CountersV3_0> runtimeCounters)
         {
             _exceptionError = exceptionError;
             _runtimeCounters = runtimeCounters;

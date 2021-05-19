@@ -36,7 +36,7 @@ namespace Prometheus.DotNetRuntime
             services.AddSingleton(typeof(IEventListener), sp => sp.GetService(Type));
                     
             // Register each events interface exposed at the level specified
-            foreach (var i in EventParserTypes.GetEventInterfaces(Type, Level))
+            foreach (var i in EventParserTypes.GetEventInterfacesForCurrentRuntime(Type, Level))
                 services.AddSingleton(i, sp => sp.GetService(Type));
         }
 

@@ -6,7 +6,9 @@ using Prometheus.DotNetRuntime.EventListening;
 
 namespace Prometheus.DotNetRuntime.EventListening.Parsers
 {
-    public class RuntimeEventParser : EventCounterParserBase<RuntimeEventParser>, RuntimeEventParser.Events.Counters
+    public class RuntimeEventParser : EventCounterParserBase<RuntimeEventParser>,
+        RuntimeEventParser.Events.CountersV3_0,
+        RuntimeEventParser.Events.CountersV5_0
     {
 #pragma warning disable CS0067
         [CounterName("threadpool-thread-count")]
@@ -65,7 +67,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         
         public static class Events
         {
-            public interface Counters : ICounterEvents
+            public interface CountersV3_0 : ICounterEvents
             {
                 event Action<MeanCounterValue> ConnectionCount;
                 event Action<MeanCounterValue> ThreadPoolQueueLength;
@@ -74,8 +76,6 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 event Action<MeanCounterValue> ActiveTimerCount;
                 event Action<IncrementingCounterValue> ExceptionCount;
                 event Action<MeanCounterValue> NumAssembliesLoaded;
-                event Action<MeanCounterValue> IlBytesJitted;
-                event Action<MeanCounterValue> MethodsJittedCount;
                 event Action<IncrementingCounterValue> AllocRate;
                 event Action<MeanCounterValue> GcHeapSize;
                 event Action<IncrementingCounterValue> Gen0GcCount;
@@ -86,6 +86,12 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 event Action<MeanCounterValue> Gen1Size;
                 event Action<MeanCounterValue> Gen2Size;
                 event Action<MeanCounterValue> LohSize;
+            }
+            
+            public interface CountersV5_0 : ICounterEvents
+            {
+                event Action<MeanCounterValue> IlBytesJitted;
+                event Action<MeanCounterValue> MethodsJittedCount;
             }
         }
     }

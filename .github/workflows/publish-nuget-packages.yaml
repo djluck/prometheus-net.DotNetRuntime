@@ -17,5 +17,5 @@ jobs:
         arrTag=(${GITHUB_REF//\// })
         VERSION="${arrTag[2]}"
         echo "Version: $VERSION"
-        dotnet pack src/prometheus-net.DotNetRuntime --include-symbols -c "Release" -p:PackageVersion=$VERSION  --output "build/"
+        dotnet pack src/prometheus-net.DotNetRuntime --include-symbols -c "Release" -p:Version=$VERSION  --output "build/"
         dotnet nuget push "build/prometheus-net.DotNetRuntime.*.symbols.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s "https://api.nuget.org/v3/index.json" -n true

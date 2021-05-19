@@ -12,7 +12,7 @@ namespace Prometheus.DotNetRuntime.Tests.IntegrationTests
     {
         protected override DotNetRuntimeStatsBuilder.Builder ConfigureBuilder(DotNetRuntimeStatsBuilder.Builder toConfigure)
         {
-            return toConfigure.WithJitStats(SampleEvery.OneEvent);
+            return toConfigure.WithJitStats(CaptureLevel.Verbose, SampleEvery.OneEvent);
         }
 
         [Test]
@@ -74,7 +74,7 @@ namespace Prometheus.DotNetRuntime.Tests.IntegrationTests
     {
         protected override DotNetRuntimeStatsBuilder.Builder ConfigureBuilder(DotNetRuntimeStatsBuilder.Builder toConfigure)
         {
-            return toConfigure.WithJitStats(SampleEvery.FiveEvents);
+            return toConfigure.WithJitStats(CaptureLevel.Verbose, SampleEvery.FiveEvents);
         }
 
         [Test]
@@ -86,20 +86,49 @@ namespace Prometheus.DotNetRuntime.Tests.IntegrationTests
             
             // act
             var sp = Stopwatch.StartNew();
-            Compile100Methods(() => 1);
+            RuntimeEventHelper.CompileMethods(() => 1, 100);
             sp.Stop();
             
             // assert
             Assert.That(() => MetricProducer.MethodsJittedTotal.Labels("true").Value, Is.GreaterThanOrEqualTo(methodsJitted + 20).After(100, 10));
             Assert.That(MetricProducer.MethodsJittedSecondsTotal.Labels("true").Value, Is.GreaterThan(methodsJittedSeconds + sp.Elapsed.TotalSeconds).Within(0.1));
         }
+    }
 
-        private void Compile100Methods(Expression<Func<int>> toCompile)
+    internal class Given_Only_Counters_Are_Enabled_For_JitStats : IntegrationTestBase<JitMetricsProducer>
+    {
+        protected override DotNetRuntimeStatsBuilder.Builder ConfigureBuilder(DotNetRuntimeStatsBuilder.Builder toConfigure)
         {
-            for (int i = 0; i < 100; i++)
-            {
-                toCompile.Compile();
-            }
+            return toConfigure.WithJitStats(CaptureLevel.Counters, SampleEvery.OneEvent);
         }
+
+#if NET5_0
+        
+        [Test]
+        public void When_Running_On_NET50_Then_Counts_Of_Methods_Are_Recorded()
+        {
+            // arrage
+            var methodsJittedPrevious = MetricProducer.MethodsJittedTotal.Value;
+            var bytesJittedPrevious = MetricProducer.BytesJitted.Value;
+            
+            // act
+            RuntimeEventHelper.CompileMethods(() => 1, 100);
+            
+            Assert.That(MetricProducer.BytesJitted, Is.Not.Null);
+            Assert.That(MetricProducer.MethodsJittedTotal, Is.Not.Null);
+            Assert.That(() => MetricProducer.BytesJitted.Value, Is.GreaterThan(bytesJittedPrevious).After(2_000, 10));
+            Assert.That(() => MetricProducer.MethodsJittedTotal.Value, Is.GreaterThan(methodsJittedPrevious + 100).After(2_000, 10));
+        }
+#endif
+        
+#if NETCOREAPP3_1
+
+        [Test]
+        public void When_Running_On_NETCOREAPP31_Then_No_Metrics_Are_Available()
+        {
+            Assert.That(MetricProducer.BytesJitted, Is.Null);
+            Assert.That(MetricProducer.MethodsJittedTotal, Is.Null);
+        }
+#endif
     }
 }

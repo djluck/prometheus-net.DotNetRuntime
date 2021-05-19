@@ -12,6 +12,7 @@ using Fasterflect;
 using Grynwald.MarkdownGenerator;
 using Prometheus;
 using Prometheus.DotNetRuntime;
+using Prometheus.DotNetRuntime.EventListening;
 using Prometheus.DotNetRuntime.Metrics.Producers;
 
 namespace DocsGenerator
@@ -20,6 +21,7 @@ namespace DocsGenerator
     {
         static async Task Main(string[] args)
         {
+            // TODO output different path depending on runtime version
             var sources = new []
             {
                 SourceAndConfig.CreateFrom(b => b.WithThreadPoolStats(CaptureLevel.Counters, new ThreadPoolMetricsProducer.Options())),
@@ -31,7 +33,9 @@ namespace DocsGenerator
                 SourceAndConfig.CreateFrom(b => b.WithContentionStats(CaptureLevel.Informational, SampleEvery.OneEvent)),
                 SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Counters)),
                 SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Errors)),
-                new SourceAndConfig(new Source(typeof(DotNetRuntimeStatsBuilder.Builder).GetMethod(nameof(DotNetRuntimeStatsBuilder.Builder.WithJitStats)), CaptureLevel.Verbose), b => b.WithJitStats(SampleEvery.OneEvent))
+                SourceAndConfig.CreateFrom(b => b.WithJitStats(CaptureLevel.Counters, SampleEvery.OneEvent)),
+                SourceAndConfig.CreateFrom(b => b.WithJitStats(CaptureLevel.Verbose, SampleEvery.OneEvent)),
+                SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Errors))
             };
 
             var assemblyDocs = typeof(DotNetRuntimeStatsBuilder).Assembly.LoadXmlDocumentation();
@@ -53,8 +57,8 @@ namespace DocsGenerator
             
             var document = new MdDocument();
             var root = document.Root;
-            root.Add(new MdHeading("Metrics exposed", 1));
-            root.Add(new MdParagraph(new MdRawMarkdownSpan($"A breakdown of all the metrics exposed by this library. Each subheading details the metrics produced by calling builder methods with the specified `{nameof(CaptureLevel)}`.")));
+            root.Add(new MdHeading(new MdRawMarkdownSpan($"`.net {EventParserTypes.CurrentRuntimeVerison.Value}` metrics"), 1));
+            root.Add(new MdParagraph(new MdRawMarkdownSpan($"Each subheading details the metrics produced by calling builder methods with the specified `{nameof(CaptureLevel)}`.")));
 
             root.Add(new MdHeading("Default metrics", 2));
             root.Add(new MdParagraph("Metrics that are included by default, regardless of what stats collectors are enabled."));
@@ -70,6 +74,9 @@ namespace DocsGenerator
                 for (var i = 0; i < methodAndSources.sources.Length; i++)
                 {
                     var s = methodAndSources.sources[i];
+                    if (allMetrics.SourceToMetrics[s].Count == 0)
+                        continue;
+                    
                     root.Add(new MdHeading(new MdCodeSpan($"{nameof(CaptureLevel)}." + s.Level), 3));
                     
                     var previousLevels = methodAndSources.sources.Take(i).ToArray();
@@ -87,7 +94,7 @@ namespace DocsGenerator
             }
             
             
-            document.Save("../../../../../docs/metrics-exposed.md");
+            document.Save($"../../../../../docs/metrics-exposed-{EventParserTypes.CurrentRuntimeVerison.Value}.md");
         }
 
         private static GroupedMetrics GetAllMetrics(SourceAndConfig[] sources)

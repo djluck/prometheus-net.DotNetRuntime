@@ -29,6 +29,7 @@ namespace Prometheus.DotNetRuntime
                 .WithThreadPoolStats()
                 .WithGcStats()
                 .WithKestrelStats()
+                .WithJitStats()
                 .WithExceptionStats();
         }
 
@@ -157,15 +158,18 @@ namespace Prometheus.DotNetRuntime
             /// Include metrics summarizing the volume of methods being compiled
             /// by the Just-In-Time compiler.
             /// </summary>
+            /// <param name="captureLevel"></param>
             /// <param name="sampleRate">
             /// The sampling rate for JIT events. A lower sampling rate reduces memory use
             /// but reduces the accuracy of metrics produced (as a percentage of events are discarded).
             /// If your application achieves a high level of throughput (thousands of work items scheduled per second on
             /// the thread pool), it's recommend to reduce the sampling rate even further.
             /// </param>
-            public Builder WithJitStats(SampleEvery sampleRate = SampleEvery.TenEvents)
+            public Builder WithJitStats(CaptureLevel captureLevel = CaptureLevel.Counters, SampleEvery sampleRate = SampleEvery.TenEvents)
             {
-                ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Verbose, sp => new JitEventParser(sampleRate)));
+                if (captureLevel != CaptureLevel.Counters)
+                    ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Verbose, sp => new JitEventParser(sampleRate)));
+                
                 _services.TryAddSingletonEnumerable<IMetricProducer, JitMetricsProducer>();
 
                 return this;
