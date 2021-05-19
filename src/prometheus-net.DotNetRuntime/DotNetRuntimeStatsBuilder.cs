@@ -28,6 +28,7 @@ namespace Prometheus.DotNetRuntime
                 .WithContentionStats()
                 .WithThreadPoolStats()
                 .WithGcStats()
+                .WithKestrelStats()
                 .WithJitStats()
                 .WithExceptionStats();
         }
@@ -99,6 +100,31 @@ namespace Prometheus.DotNetRuntime
 
                 _services.TryAddSingletonEnumerable<IMetricProducer, ThreadPoolMetricsProducer>();
                 _services.AddSingleton(options ?? new ThreadPoolMetricsProducer.Options());
+
+                return this;
+            }
+
+            /// <summary>
+            /// Include metrics around the kestrel stats
+            /// </summary>
+            /// <param name="level"></param>
+            /// <param name="sampleRate">
+            /// The sampling rate for contention events (defaults to 100%). A lower sampling rate reduces memory use
+            /// but reduces the accuracy of metrics produced (as a percentage of events are discarded).
+            /// </param>
+            public Builder WithKestrelStats(CaptureLevel level = CaptureLevel.Counters, SampleEvery sampleRate = SampleEvery.TwoEvents)
+            {
+                try
+                {
+                    if (level != CaptureLevel.Counters)
+                        ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Informational, sp => new KestrelEventParser(sampleRate)));
+                }
+                catch (UnsupportedEventParserLevelException ex)
+                {
+                    throw UnsupportedCaptureLevelException.CreateWithCounterSupport(ex);
+                }
+
+                _services.TryAddSingletonEnumerable<IMetricProducer, KestrelMetricsProducer>();
 
                 return this;
             }

@@ -12,13 +12,13 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
     {
 #pragma warning disable CS0067
         [CounterName("threadpool-thread-count")]
-        public event Action<MeanCounterValue>? ThreadPoolThreadCount;
+        public event Action<MeanCounterValue>? ConnectionCount;
             
         [CounterName("threadpool-queue-length")]
         public event Action<MeanCounterValue>? ThreadPoolQueueLength;
             
         [CounterName("threadpool-completed-items-count")]
-        public event Action<IncrementingCounterValue>? ThreadPoolCompletedItemsCount;
+        public event Action<IncrementingCounterValue>? ConnectionCompletedItemsCount;
 
         [CounterName("monitor-lock-contention-count")]
         public event Action<IncrementingCounterValue>? MonitorLockContentionCount;
@@ -69,9 +69,9 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         {
             public interface CountersV3_0 : ICounterEvents
             {
-                event Action<MeanCounterValue> ThreadPoolThreadCount;
+                event Action<MeanCounterValue> ConnectionCount;
                 event Action<MeanCounterValue> ThreadPoolQueueLength;
-                event Action<IncrementingCounterValue> ThreadPoolCompletedItemsCount; 
+                event Action<IncrementingCounterValue> ConnectionCompletedItemsCount; 
                 event Action<IncrementingCounterValue> MonitorLockContentionCount;
                 event Action<MeanCounterValue> ActiveTimerCount;
                 event Action<IncrementingCounterValue> ExceptionCount;
