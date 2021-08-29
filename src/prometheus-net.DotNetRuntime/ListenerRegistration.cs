@@ -25,6 +25,10 @@ namespace Prometheus.DotNetRuntime
 
             if (!supportedLevels.Contains(eventLevel))
                 throw new UnsupportedEventParserLevelException(typeof(T), level, supportedLevels);
+
+
+            if (!EventParserTypes.AreEventsSupportedByRuntime(typeof(T)))
+                throw new UnsupportedEventParserRuntimeException(typeof(T));
                     
 
             return new ListenerRegistration(eventLevel, typeof(T), sp => (object)factory(sp));
@@ -64,7 +68,18 @@ namespace Prometheus.DotNetRuntime
             return (Type != null ? Type.GetHashCode() : 0);
         }
     }
-    
+
+    internal class UnsupportedEventParserRuntimeException : Exception
+    {
+        public Type Type { get; }
+
+        public UnsupportedEventParserRuntimeException(Type type)
+            : base($"{EventParserTypes.AreEventsSupportedByRuntime(type)}")
+        {
+            Type = type;
+        }
+    }
+
     public class UnsupportedCaptureLevelException : Exception
     {
         public UnsupportedCaptureLevelException(CaptureLevel specifiedLevel, ISet<CaptureLevel> supportedLevels)

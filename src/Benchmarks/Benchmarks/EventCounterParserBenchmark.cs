@@ -96,7 +96,7 @@ namespace Benchmarks.Benchmarks
         
         public class DummyTypeEventCounterParser : EventCounterParserBase<DummyTypeEventCounterParser>, TestCounters
         {
-            public override Guid EventSourceGuid { get; }
+            public override string EventSourceName { get; }
             public override EventKeywords Keywords { get; }
             public override int RefreshIntervalSeconds { get; set; }
             

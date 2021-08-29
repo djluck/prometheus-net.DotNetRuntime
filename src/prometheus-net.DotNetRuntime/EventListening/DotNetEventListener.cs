@@ -37,7 +37,7 @@ namespace Prometheus.DotNetRuntime.EventListening
         private void OnEventSourceCreated(object sender, EventSourceCreatedEventArgs e)
         {
             var es = e.EventSource;
-            if (es.Guid == EventListener.EventSourceGuid)
+            if (es.Name == EventListener.EventSourceName)
             {
                 EnableEvents(es, Level, EventListener.Keywords,  GetEventListenerArguments(EventListener));
                 _enabledEventSources.Add(e.EventSource);
@@ -70,7 +70,7 @@ namespace Prometheus.DotNetRuntime.EventListening
                 
                 // Event counters are present in every EventListener, regardless of if they subscribed to them.
                 // Kind of odd but just filter them out by source here.
-                if (eventData.EventSource.Guid == EventListener.EventSourceGuid)
+                if (eventData.EventSource.Name == EventListener.EventSourceName)
                     EventListener.ProcessEvent(eventData);
 
                 if (_globalOptions.EnabledDebuggingMetrics)

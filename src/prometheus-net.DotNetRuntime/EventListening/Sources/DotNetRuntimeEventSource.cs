@@ -11,6 +11,7 @@ namespace Prometheus.DotNetRuntime.EventListening.EventSources
     public class DotNetRuntimeEventSource
     {
         public static readonly Guid Id = Guid.Parse("5e5bb766-bbfc-5662-0548-1d44fad9bb56");
+        public static readonly string Name = "Microsoft-Windows-DotNETRuntime";
         
         [Flags]
         public enum Keywords : long

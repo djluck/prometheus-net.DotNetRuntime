@@ -7,9 +7,9 @@ namespace Prometheus.DotNetRuntime.EventListening
     public interface IEventListener : IDisposable
     {
         /// <summary>
-        /// The unique id of the event source to receive events from.
+        /// The name of the event source to receive events from.
         /// </summary>
-        Guid EventSourceGuid { get; }
+        string EventSourceName { get; }
         
         /// <summary>
         /// The keywords to enable in the event source.

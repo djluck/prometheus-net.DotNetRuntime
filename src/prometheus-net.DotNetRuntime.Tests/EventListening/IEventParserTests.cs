@@ -32,7 +32,7 @@ namespace Prometheus.DotNetRuntime.Tests.EventListening
 
         private class TestParserNoEvents : IEventParser<TestParserNoEvents>, IEvents
         {
-            public Guid EventSourceGuid { get; }
+            public string EventSourceName { get; }
             public EventKeywords Keywords { get; }
             public void ProcessEvent(EventWrittenEventArgs e)
             {

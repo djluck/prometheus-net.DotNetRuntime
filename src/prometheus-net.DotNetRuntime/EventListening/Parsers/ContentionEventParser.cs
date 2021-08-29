@@ -26,7 +26,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         }
 
         public EventKeywords Keywords => (EventKeywords)DotNetRuntimeEventSource.Keywords.Contention;
-        public Guid EventSourceGuid => DotNetRuntimeEventSource.Id;
+        public string EventSourceName => DotNetRuntimeEventSource.Name;
         
         public void ProcessEvent(EventWrittenEventArgs e)
         {

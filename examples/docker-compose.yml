@@ -63,7 +63,7 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:5000
       # Additional vars that can be set to tweak behaviour
-      #- Example__UseDefaultMetrics=true
+      - Example__UseDefaultMetrics=true
       #- Example__EnableMetrics=false
       #- Example__UseDebuggingMetrics=true
       #- Example__RecycleEvery=00:10:00

@@ -35,7 +35,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         public event Action<Events.CollectionCompleteEvent> CollectionComplete;
         public event Action<Events.AllocationTickEvent> AllocationTick;
 
-        public Guid EventSourceGuid => DotNetRuntimeEventSource.Id;
+        public string EventSourceName => DotNetRuntimeEventSource.Name;
         public EventKeywords Keywords => (EventKeywords) DotNetRuntimeEventSource.Keywords.GC;
 
         public void ProcessEvent(EventWrittenEventArgs e)
