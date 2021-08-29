@@ -50,8 +50,8 @@ namespace Prometheus.DotNetRuntime.EventListening
         }
 
         public abstract string EventSourceName { get; }
-        public abstract EventKeywords Keywords { get; }
-        public abstract int RefreshIntervalSeconds { get; set; }
+        public virtual EventKeywords Keywords { get; } = EventKeywords.All;
+        public virtual int RefreshIntervalSeconds { get; set; } = 1;
 
         public void ProcessEvent(EventWrittenEventArgs e)
         {

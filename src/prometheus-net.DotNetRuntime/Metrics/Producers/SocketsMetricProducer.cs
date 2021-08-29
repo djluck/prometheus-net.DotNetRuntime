@@ -16,23 +16,43 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
             if (!_socketCounters.Enabled)
                 return;
 
-            OutgoingConnections = metrics.CreateGauge("dotnet_sockets_connections_outgoing_count", "The current number of outgoing established TCP connections");
-            _socketCounters.Events.OutgoingConnectionsEstablished += e => OutgoingConnections.Set(e.Mean);
+            OutgoingConnectionEstablished = metrics.CreateCounter("dotnet_sockets_connections_established_outgoing_total", "The total number of outgoing established TCP connections");
+            var lastEstablishedOutgoing = 0.0;
+            _socketCounters.Events.OutgoingConnectionsEstablished += e =>
+            {
+                OutgoingConnectionEstablished.Inc(e.Mean - lastEstablishedOutgoing);
+                lastEstablishedOutgoing = e.Mean;
+            };
             
-            IncomingConnections = metrics.CreateGauge("dotnet_sockets_connections_incoming_count", "The current number of incoming established TCP connections");
-            _socketCounters.Events.IncomingConnectionsEstablished += e => IncomingConnections.Set(e.Mean);
+            IncomingConnectionEstablished = metrics.CreateCounter("dotnet_sockets_connections_established_incoming_total", "The total number of incoming established TCP connections");
+            var lastEstablishedIncoming = 0.0;
+            _socketCounters.Events.IncomingConnectionsEstablished += e =>
+            {
+                IncomingConnectionEstablished.Inc(e.Mean - lastEstablishedIncoming);
+                lastEstablishedIncoming = e.Mean;
+            };
             
-            BytesReceived = metrics.CreateGauge("dotnet_sockets_bytes_received_total", "The total number of bytes received over the network");
-            _socketCounters.Events.BytesReceived += e => BytesReceived.Inc(e.Mean);
+            BytesReceived = metrics.CreateCounter("dotnet_sockets_bytes_received_total", "The total number of bytes received over the network");
+            var lastReceived = 0.0;
+            _socketCounters.Events.BytesReceived += e =>
+            {
+                BytesReceived.Inc(e.Mean - lastReceived);
+                lastReceived = e.Mean;
+            };
             
-            BytesSent = metrics.CreateGauge("dotnet_sockets_bytes_sent_total", "The total number of bytes sent over the network");
-            _socketCounters.Events.BytesSent += e => BytesSent.Inc(e.Mean);
+            var lastSent = 0.0;
+            BytesSent = metrics.CreateCounter("dotnet_sockets_bytes_sent_total", "The total number of bytes sent over the network");
+            _socketCounters.Events.BytesSent += e =>
+            {
+                BytesSent.Inc(e.Mean - lastSent);
+                lastSent = e.Mean;
+            };
         }
 
-        internal Gauge BytesSent { get; private set; }
-        internal Gauge BytesReceived { get; private set; }
-        internal Gauge IncomingConnections { get; private set; }
-        internal Gauge OutgoingConnections { get; private set; }
+        internal Counter BytesSent { get; private set; }
+        internal Counter BytesReceived { get; private set; }
+        internal Counter IncomingConnectionEstablished { get; private set; }
+        internal Counter OutgoingConnectionEstablished { get; private set; }
 
         public void UpdateMetrics()
         {

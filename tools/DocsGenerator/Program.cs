@@ -35,7 +35,8 @@ namespace DocsGenerator
                 SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Errors)),
                 SourceAndConfig.CreateFrom(b => b.WithJitStats(CaptureLevel.Counters, SampleEvery.OneEvent)),
                 SourceAndConfig.CreateFrom(b => b.WithJitStats(CaptureLevel.Verbose, SampleEvery.OneEvent)),
-                SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Errors))
+                SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Errors)),
+                SourceAndConfig.CreateFrom(b => b.WithSocketStats())
             };
 
             var assemblyDocs = typeof(DotNetRuntimeStatsBuilder).Assembly.LoadXmlDocumentation();
@@ -174,7 +175,9 @@ namespace DocsGenerator
             {
                 var mCall = (fromMethod.Body as MethodCallExpression);
                 var method = mCall.Method;
-                var captureLevel = ( CaptureLevel)mCall.Arguments.OfType<ConstantExpression>().Single(x => x.Type == typeof(CaptureLevel)).Value;
+                var captureLevelArg = mCall?.Arguments.OfType<ConstantExpression>().SingleOrDefault(x => x.Type == typeof(CaptureLevel))?.Value;
+                
+                var captureLevel = captureLevelArg != null ? ( CaptureLevel)captureLevelArg : CaptureLevel.Counters;
 
                 return new SourceAndConfig(new Source(method, captureLevel), fromMethod.Compile());
             }

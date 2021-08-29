@@ -25,10 +25,8 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         [CounterName("datagrams-sent")]
         public event Action<MeanCounterValue> DatagramsSent;
 #pragma warning restore CS0067
-        
-        public override string EventSourceName { get; }
-        public override EventKeywords Keywords { get; }
-        public override int RefreshIntervalSeconds { get; set; } = 1;
+
+        public override string EventSourceName => "System.Net.Sockets";
 
         public static class Events
         {

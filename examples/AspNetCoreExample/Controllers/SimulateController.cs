@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -12,12 +13,20 @@ namespace AspNetCoreExample.Controllers
     [ApiController]
     public class SimulateController : ControllerBase
     {
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public SimulateController(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<string>>> Get(
             bool simulateAlloc = true,
             bool simulateJit = true,
             bool simulateException = true,
-            bool simulateBlocking = false)
+            bool simulateBlocking = false,
+            bool simulateOutgoingNetwork = true)
         {
             var r = new Random();
             if (simulateAlloc)
@@ -53,6 +62,12 @@ namespace AspNetCoreExample.Controllers
             if (simulateBlocking)
             {
                 Thread.Sleep(100);
+            }
+
+            if (simulateOutgoingNetwork)
+            {
+                using var client = _httpClientFactory.CreateClient();
+                using var _ = await client.GetAsync("https://httpstat.us/200");
             }
 
             return new string[] {"value1" + r.Next(), "value2"+ r.Next()};
