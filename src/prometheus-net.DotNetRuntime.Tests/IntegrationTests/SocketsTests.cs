@@ -36,7 +36,7 @@ namespace Prometheus.DotNetRuntime.Tests.IntegrationTests
                 .ToArray();
 
             // assert
-            Assert.That(() => MetricProducer.OutgoingConnectionEstablished.Value, Is.EqualTo(10).After(2_000, 100));
+            Assert.That(() => MetricProducer.OutgoingConnectionEstablished.Value, Is.GreaterThanOrEqualTo(10).After(2_000, 100));
             Assert.That(MetricProducer.BytesSent.Value, Is.GreaterThan(0));
             
             await Task.WhenAll(requests);
