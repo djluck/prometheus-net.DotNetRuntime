@@ -8,7 +8,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
     {
         public event Action<Events.ExceptionThrownEvent> ExceptionThrown;
 
-        public Guid EventSourceGuid => DotNetRuntimeEventSource.Id;
+        public string EventSourceName => DotNetRuntimeEventSource.Name;
         public EventKeywords Keywords => (EventKeywords) DotNetRuntimeEventSource.Keywords.Exception;
 
         public void ProcessEvent(EventWrittenEventArgs e)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Net.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Prometheus.DotNetRuntime.EventListening;
@@ -29,6 +30,7 @@ namespace Prometheus.DotNetRuntime
                 .WithThreadPoolStats()
                 .WithGcStats()
                 .WithJitStats()
+                .WithSocketStats()
                 .WithExceptionStats();
         }
 
@@ -173,6 +175,18 @@ namespace Prometheus.DotNetRuntime
                 opts.HistogramBuckets ??= histogramBuckets;
                 
                 _services.AddSingleton(opts);
+
+                return this;
+            }
+            
+            /// <summary>
+            /// Include metrics around established TCP connections and the volume of bytes sent/ received over the network.
+            /// </summary>
+            /// <returns></returns>
+            public Builder WithSocketStats()
+            {
+                ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Counters, sp => new SocketsEventParser()));
+                _services.TryAddSingletonEnumerable<IMetricProducer, SocketsMetricProducer>();
 
                 return this;
             }

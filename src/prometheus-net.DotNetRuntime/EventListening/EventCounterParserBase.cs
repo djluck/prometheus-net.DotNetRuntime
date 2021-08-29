@@ -49,10 +49,10 @@ namespace Prometheus.DotNetRuntime.EventListening
             );
         }
 
-        public abstract Guid EventSourceGuid { get; }
-        public abstract EventKeywords Keywords { get; }
-        public abstract int RefreshIntervalSeconds { get; set; }
-        
+        public abstract string EventSourceName { get; }
+        public virtual EventKeywords Keywords { get; } = EventKeywords.All;
+        public virtual int RefreshIntervalSeconds { get; set; } = 1;
+
         public void ProcessEvent(EventWrittenEventArgs e)
         {
             if (e.EventName == null || !e.EventName.Equals("EventCounters"))

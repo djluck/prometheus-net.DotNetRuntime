@@ -61,10 +61,8 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         public event Action<MeanCounterValue>? LohSize;
 #pragma warning restore CS0067
 
-        public override Guid EventSourceGuid => EventSources.SystemRuntimeEventSource.Id;
-        public override EventKeywords Keywords { get; }
-        public override int RefreshIntervalSeconds { get; set; } = 1;
-        
+        public override string EventSourceName => EventSources.SystemRuntimeEventSource.Name;
+
         public static class Events
         {
             public interface CountersV3_0 : ICounterEvents

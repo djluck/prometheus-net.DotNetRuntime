@@ -9,7 +9,7 @@ using Prometheus.DotNetRuntime.Metrics;
 namespace Prometheus.DotNetRuntime.Tests.IntegrationTests
 {
     [TestFixture]
-    internal abstract class IntegrationTestBase<TMetricProducer>
+    public abstract class IntegrationTestBase<TMetricProducer>
         where TMetricProducer : IMetricProducer
     {
         private DotNetRuntimeStatsCollector _collector;

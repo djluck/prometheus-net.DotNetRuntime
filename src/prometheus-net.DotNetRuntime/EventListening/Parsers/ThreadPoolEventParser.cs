@@ -17,7 +17,7 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         public event Action<Events.ThreadPoolAdjustedEvent> ThreadPoolAdjusted;
         public event Action<Events.IoThreadPoolAdjustedEvent> IoThreadPoolAdjusted;
 
-        public Guid EventSourceGuid => DotNetRuntimeEventSource.Id;
+        public string EventSourceName => DotNetRuntimeEventSource.Name;
         public EventKeywords Keywords => (EventKeywords) DotNetRuntimeEventSource.Keywords.Threading;
 
         public void ProcessEvent(EventWrittenEventArgs e)
