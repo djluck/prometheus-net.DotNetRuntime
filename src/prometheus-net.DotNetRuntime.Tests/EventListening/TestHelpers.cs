@@ -12,18 +12,30 @@ namespace Prometheus.DotNetRuntime.Tests.EventListening
     {
         public static EventWrittenEventArgs CreateEventWrittenEventArgs(int eventId, DateTime? timestamp = null, params object[] payload)
         {
-            var args = (EventWrittenEventArgs)typeof(EventWrittenEventArgs).CreateInstance(new []{ typeof(EventSource)}, Flags.NonPublic | Flags.Instance, new object[] { null});
-            args.SetPropertyValue("EventId", eventId);
+            EventWrittenEventArgs args;
+            var bindFlags = Flags.NonPublic | Flags.Instance;
+            
+            // In .NET 6.0, they changed the signature of these constructors- handle this annoyance
+            if (typeof(EventWrittenEventArgs).GetConstructors(bindFlags).Any(x => x.GetParameters().Length == 1))
+            {
+                args = (EventWrittenEventArgs)typeof(EventWrittenEventArgs).CreateInstance(new[] { typeof(EventSource)}, Flags.NonPublic | Flags.Instance, new object[] { null });
+                args.SetPropertyValue("EventId", eventId);
+            }
+            else
+            {
+                args = (EventWrittenEventArgs)typeof(EventWrittenEventArgs).CreateInstance(new[] { typeof(EventSource), typeof(int) }, Flags.NonPublic | Flags.Instance, new object[] { null, eventId });
+            }
+            
             args.SetPropertyValue("Payload", new ReadOnlyCollection<object>(payload));
             
             if (timestamp.HasValue)
             {
                 args.SetPropertyValue("TimeStamp", timestamp.Value);
             }
-            
+
             return args;
         }
-        
+
         public static EventWrittenEventArgs CreateCounterEventWrittenEventArgs(params (string key, object val)[] payload)
         {
             var counterPayload = payload.ToDictionary(k => k.key, v => v.val);
@@ -41,14 +53,11 @@ namespace Prometheus.DotNetRuntime.Tests.EventListening
         public class EventAssertion<T>
         {
             private Action<T> _handler;
-            
+
             public EventAssertion(Action<Action<T>> wireUp)
             {
-                _handler = e =>
-                {
-                    History.Add(e);
-                };
-                
+                _handler = e => { History.Add(e); };
+
                 wireUp(_handler);
             }
 

@@ -26,10 +26,8 @@ namespace Prometheus.DotNetRuntime
             if (!supportedLevels.Contains(eventLevel))
                 throw new UnsupportedEventParserLevelException(typeof(T), level, supportedLevels);
 
-
             if (!EventParserTypes.AreEventsSupportedByRuntime(typeof(T)))
                 throw new UnsupportedEventParserRuntimeException(typeof(T));
-                    
 
             return new ListenerRegistration(eventLevel, typeof(T), sp => (object)factory(sp));
         }

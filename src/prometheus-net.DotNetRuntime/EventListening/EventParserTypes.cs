@@ -87,8 +87,16 @@ namespace Prometheus.DotNetRuntime.EventListening
         internal static Lazy<Version> CurrentRuntimeVerison = new Lazy<Version>(() =>
         {
             var split = RuntimeInformation.FrameworkDescription.Split(' ');
-
-            if (Version.TryParse(split[split.Length - 1], out var version))
+            if (split.Length < 2)
+                return null;
+                
+            var versionPart = split[^1];
+            // Handle preview version strings, e.g. .NET 6.0.0-preview.7.21377.19. 
+            var hyphenIndex = versionPart.IndexOf('-');
+            if (hyphenIndex > -1)
+                versionPart = versionPart.Substring(0, hyphenIndex);
+            
+            if (Version.TryParse(versionPart, out var version))
                 return new Version(version.Major, version.Minor);
 
             return null;
