@@ -2,11 +2,12 @@
     <Import Project="../Common.csproj" />
 
     <PropertyGroup>
-        <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+        <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <RootNamespace>Prometheus.DotNetRuntime.Tests</RootNamespace>
         <Platforms>AnyCPU</Platforms>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>10</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

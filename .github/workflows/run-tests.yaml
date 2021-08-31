@@ -17,6 +17,11 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+    - name: Setup .NET Core 6.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+        include-prerelease: true
     - uses: actions/checkout@v1
     # This test constantly passes localy (windows + linux) but fails in the test environment. Don't have the time/ inclination to figure out why this is right now..
     - run: dotnet test -c "Debug" --filter Name!=When_blocking_work_is_executed_on_the_thread_pool_then_thread_pool_delays_are_measured
