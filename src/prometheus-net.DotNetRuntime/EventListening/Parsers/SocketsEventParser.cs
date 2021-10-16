@@ -13,10 +13,10 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
         [CounterName("incoming-connections-established")]
         public event Action<MeanCounterValue> IncomingConnectionsEstablished;
         
-        [CounterName("bytes-received")]
+        [CounterName("bytes-sent")]
         public event Action<MeanCounterValue> BytesSent;
         
-        [CounterName("bytes-sent")]
+        [CounterName("bytes-received")]
         public event Action<MeanCounterValue> BytesReceived;
         
         [CounterName("datagrams-received")]
