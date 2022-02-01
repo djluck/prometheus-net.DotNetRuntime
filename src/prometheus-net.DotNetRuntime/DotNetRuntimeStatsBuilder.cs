@@ -172,8 +172,9 @@ namespace Prometheus.DotNetRuntime
                 _services.TryAddSingletonEnumerable<IMetricProducer, GcMetricsProducer>();
 
                 var opts = new GcMetricsProducer.Options();
-                opts.HistogramBuckets ??= histogramBuckets;
-                
+                if (histogramBuckets != null)
+                    opts.HistogramBuckets = histogramBuckets;
+
                 _services.AddSingleton(opts);
 
                 return this;
