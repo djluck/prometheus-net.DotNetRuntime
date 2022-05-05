@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -19,16 +21,25 @@ namespace DocsGenerator
 {
     class Program
     {
+        static void DoHttpRequest()
+        {
+            // Do a HTTP request to trigger DNS requests
+            using var client = new HttpClient();
+            client.GetAsync("https://httpstat.us/200").Wait();
+        }
+
         static async Task Main(string[] args)
         {
+            DoHttpRequest();
+
             // TODO output different path depending on runtime version
             var sources = new []
             {
                 SourceAndConfig.CreateFrom(b => b.WithThreadPoolStats(CaptureLevel.Counters, new ThreadPoolMetricsProducer.Options())),
                 SourceAndConfig.CreateFrom(b => b.WithThreadPoolStats(CaptureLevel.Informational, new ThreadPoolMetricsProducer.Options())),
-                SourceAndConfig.CreateFrom(b => b.WithGcStats(CaptureLevel.Counters, new double[0])),
-                SourceAndConfig.CreateFrom(b => b.WithGcStats(CaptureLevel.Informational, new double[0])),
-                SourceAndConfig.CreateFrom(b => b.WithGcStats(CaptureLevel.Verbose, new double[0])),
+                SourceAndConfig.CreateFrom(b => b.WithGcStats(CaptureLevel.Counters, null)),
+                SourceAndConfig.CreateFrom(b => b.WithGcStats(CaptureLevel.Informational, null)),
+                SourceAndConfig.CreateFrom(b => b.WithGcStats(CaptureLevel.Verbose, null)),
                 SourceAndConfig.CreateFrom(b => b.WithContentionStats(CaptureLevel.Counters, SampleEvery.OneEvent)),
                 SourceAndConfig.CreateFrom(b => b.WithContentionStats(CaptureLevel.Informational, SampleEvery.OneEvent)),
                 SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Counters)),
@@ -37,7 +48,7 @@ namespace DocsGenerator
                 SourceAndConfig.CreateFrom(b => b.WithJitStats(CaptureLevel.Verbose, SampleEvery.OneEvent)),
                 SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Errors)),
                 SourceAndConfig.CreateFrom(b => b.WithSocketStats()),
-                SourceAndConfig.CreateFrom(b => b.WithNameResolution())
+                SourceAndConfig.CreateFrom(b => b.WithNameResolution(null))
             };
 
             var assemblyDocs = typeof(DotNetRuntimeStatsBuilder).Assembly.LoadXmlDocumentation();
@@ -66,23 +77,30 @@ namespace DocsGenerator
             root.Add(new MdParagraph("Metrics that are included by default, regardless of what stats collectors are enabled."));
 
             root.Add(new MdTable(headerRow: new MdTableRow("Name", "Type", "Description", "Labels"), 
-                allMetrics.CommonMetrics.Select(x => new MdTableRow(GetCells(x))).ToArray()));
+                allMetrics.CommonMetrics.OrderBy(x => x.Name).Select(x => new MdTableRow(GetCells(x))).ToArray()));
                 
-            foreach (var methodAndSources in allMetrics.MethodsToSources)
+            foreach (var methodAndSources in allMetrics.MethodsToSources.OrderBy(x => x.method.Name))
             {
                 root.Add(new MdHeading(new MdCodeSpan($".{methodAndSources.method.Name}()"), 2));
+
+                var nonEmptySources = methodAndSources.sources
+                    .Where(s => allMetrics.SourceToMetrics[s].Count > 0)
+                    .ToList();
+
+                if (nonEmptySources.Count == 0)
+                {
+                    root.Add(new MdParagraph("This method does not export any metrics on this version of the framework."));
+                    continue;
+                }
+
                 root.Add(new MdParagraph(assemblyDocs.GetDocumentation(methodAndSources.method).Summary));
 
-                for (var i = 0; i < methodAndSources.sources.Length; i++)
+                for (var i = 0; i < nonEmptySources.Count; i++)
                 {
-                    var s = methodAndSources.sources[i];
-                    if (allMetrics.SourceToMetrics[s].Count == 0)
-                        continue;
-                    
+                    var s = nonEmptySources[i];
                     root.Add(new MdHeading(new MdCodeSpan($"{nameof(CaptureLevel)}." + s.Level), 3));
                     
-                    var previousLevels = methodAndSources.sources.Take(i).ToArray();
-
+                    var previousLevels = nonEmptySources.Take(i).ToArray();
                     if (previousLevels.Length > 0)
                     {
                         root.Add(new MdParagraph(
@@ -91,7 +109,7 @@ namespace DocsGenerator
                     }
 
                     root.Add(new MdTable(headerRow: new MdTableRow("Name", "Type", "Description", "Labels"), 
-                        allMetrics.SourceToMetrics[s].Select(x => new MdTableRow(GetCells(x.Collector))).ToArray()));
+                        allMetrics.SourceToMetrics[s].OrderBy(x => x.Collector.Name).Select(x => new MdTableRow(GetCells(x.Collector))).ToArray()));
                 }
             }
             
@@ -147,16 +165,19 @@ namespace DocsGenerator
 
         private static IEnumerable<ExposedMetric> GetExposedMetric(SourceAndConfig source)
         {
-            Console.WriteLine($"Getting metrics for {source}..");
-            
+            Console.WriteLine($"Getting metrics for {source.Source}..");
+
             // Start collector
             var registry = new CollectorRegistry();
-            using var statsCollector = source.ApplyConfig(DotNetRuntimeStatsBuilder.Customize()).StartCollecting(registry);
-            // Wait for metrics to be available (hacky!)
-            Thread.Sleep(1500);
+            using var statsCollector = source.ApplyConfig(DotNetRuntimeStatsBuilder.Customize()).StartCollecting(registry) as DotNetRuntimeStatsCollector;
 
             // Pull registered collectors
             var collectors = registry.TryGetFieldValue("_collectors", Flags.InstancePrivate) as ConcurrentDictionary<string, Collector>;
+
+            // Wait for all listeners to be ready
+            SpinWait.SpinUntil(
+                () => statsCollector.EventListeners.All(x => x.StartedReceivingEvents),
+                TimeSpan.FromSeconds(5));
 
             return collectors.Values.Select(c => new ExposedMetric(c, source.Source));
         }
