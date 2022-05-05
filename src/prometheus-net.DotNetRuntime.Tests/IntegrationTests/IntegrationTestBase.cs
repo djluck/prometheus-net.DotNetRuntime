@@ -24,21 +24,22 @@ namespace Prometheus.DotNetRuntime.Tests.IntegrationTests
             MetricProducer = (TMetricProducer)_collector.ServiceProvider.GetServices<IMetricProducer>().Single(x => x is TMetricProducer);
 
             // wait for event listener thread to spin up
-            var waitingFor = Stopwatch.StartNew();
             var waitFor = TimeSpan.FromSeconds(10);
-            
-            while (!_collector.EventListeners.All(x => x.StartedReceivingEvents))
+
+            Console.Write("Waiting for event listeners to be active.. ");
+            if (!SpinWait.SpinUntil(() =>
+                    _collector.EventListeners.All(x => x.StartedReceivingEvents),
+                    waitFor))
             {
-                Thread.Sleep(10); 
-                Console.Write("Waiting for event listeners to be active.. ");
-                
-                if (waitingFor.Elapsed > waitFor)
-                {
-                    Assert.Fail($"Waited {waitFor} and still not all event listeners were ready! Event listeners not ready: {string.Join(", ", _collector.EventListeners.Where(x => !x.StartedReceivingEvents))}");
-                    return;
-                }
+                var notReadySources =
+                    _collector.EventListeners.Where(x => !x.StartedReceivingEvents)
+                        .Select(x => x.EventListener.EventSourceName)
+                        .ToList();
+
+                if (notReadySources.Any())
+                    Assert.Fail($"Waited {waitFor} and still not all event listeners were ready! Event listeners not ready: {string.Join(", ", notReadySources)}");
             }
-            
+
             Console.WriteLine("All event listeners should be active now.");
         }
 

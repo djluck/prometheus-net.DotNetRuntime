@@ -31,7 +31,8 @@ namespace Prometheus.DotNetRuntime
                 .WithGcStats()
                 .WithJitStats()
                 .WithSocketStats()
-                .WithExceptionStats();
+                .WithExceptionStats()
+                .WithNameResolution();
         }
 
         /// <summary>
@@ -188,6 +189,18 @@ namespace Prometheus.DotNetRuntime
             {
                 ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Counters, sp => new SocketsEventParser()));
                 _services.TryAddSingletonEnumerable<IMetricProducer, SocketsMetricProducer>();
+
+                return this;
+            }
+
+            /// <summary>
+            /// Include metrics around DNS lookup requests and average duration.
+            /// </summary>
+            /// <returns></returns>
+            public Builder WithNameResolution()
+            {
+                ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Counters, sp => new NameResolutionEventParser()));
+                _services.TryAddSingletonEnumerable<IMetricProducer, NameResolutionMetricProducer>();
 
                 return this;
             }

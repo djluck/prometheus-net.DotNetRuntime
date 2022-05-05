@@ -36,7 +36,8 @@ namespace DocsGenerator
                 SourceAndConfig.CreateFrom(b => b.WithJitStats(CaptureLevel.Counters, SampleEvery.OneEvent)),
                 SourceAndConfig.CreateFrom(b => b.WithJitStats(CaptureLevel.Verbose, SampleEvery.OneEvent)),
                 SourceAndConfig.CreateFrom(b => b.WithExceptionStats(CaptureLevel.Errors)),
-                SourceAndConfig.CreateFrom(b => b.WithSocketStats())
+                SourceAndConfig.CreateFrom(b => b.WithSocketStats()),
+                SourceAndConfig.CreateFrom(b => b.WithNameResolution())
             };
 
             var assemblyDocs = typeof(DotNetRuntimeStatsBuilder).Assembly.LoadXmlDocumentation();
