@@ -1,14 +1,17 @@
 ﻿using Prometheus.DotNetRuntime.EventListening.Parsers;
+using Prometheus.DotNetRuntime.Metrics.Producers.Util;
 
 namespace Prometheus.DotNetRuntime.Metrics.Producers
 {
     public class NameResolutionMetricProducer : IMetricProducer
     {
+        private readonly Options _options;
         private readonly Consumes<NameResolutionEventParser.Events.CountersV5_0> _nameResolutionCounter;
 
-        public NameResolutionMetricProducer(Consumes<NameResolutionEventParser.Events.CountersV5_0> nameResolutionCounter)
+        public NameResolutionMetricProducer(Options options, Consumes<NameResolutionEventParser.Events.CountersV5_0> nameResolutionCounter)
         {
             _nameResolutionCounter = nameResolutionCounter;
+            _options = options;
         }
         
         public void RegisterMetrics(MetricFactory metrics)
@@ -24,7 +27,12 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
                 lastLookups = e.Mean;
             };
 
-            DnsLookupDuration = metrics.CreateHistogram("dotnet_dns_lookup_duration_avg_seconds", "The average time taken for a DNS lookup");
+            DnsLookupDuration = metrics.CreateHistogram("dotnet_dns_lookup_duration_avg_seconds",
+                "The average time taken for a DNS lookup",
+                new HistogramConfiguration
+                {
+                    Buckets = _options.HistogramBuckets
+                });
             _nameResolutionCounter.Events.DnsLookupsDuration += e =>
             {
                 // Convert milliseconds to seconds
@@ -37,6 +45,11 @@ namespace Prometheus.DotNetRuntime.Metrics.Producers
 
         public void UpdateMetrics()
         {
+        }
+
+        public class Options
+        {
+            public double[] HistogramBuckets { get; set; } = Constants.DefaultHistogramBuckets;
         }
     }
 }
