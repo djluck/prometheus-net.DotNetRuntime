@@ -21,16 +21,11 @@ namespace DocsGenerator
 {
     class Program
     {
-        static void DoHttpRequest()
-        {
-            // Do a HTTP request to trigger DNS requests
-            using var client = new HttpClient();
-            client.GetAsync("https://httpstat.us/200").Wait();
-        }
-
         static async Task Main(string[] args)
         {
-            DoHttpRequest();
+            // Do a HTTP request to trigger DNS request + open socket
+            using var client = new HttpClient();
+            client.GetAsync("https://httpstat.us/200").Wait();
 
             // TODO output different path depending on runtime version
             var sources = new []
