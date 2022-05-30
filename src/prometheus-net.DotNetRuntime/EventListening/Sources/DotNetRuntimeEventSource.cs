@@ -221,6 +221,7 @@ namespace Prometheus.DotNetRuntime.EventListening.EventSources
             Stabilizing,
             Starvation,
             ThreadTimedOut,
+            CooperativeBlocking
         }
     }
 }
