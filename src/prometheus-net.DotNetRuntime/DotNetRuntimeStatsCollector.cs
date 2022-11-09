@@ -201,7 +201,7 @@ namespace Prometheus.DotNetRuntime
             public bool EnabledDebuggingMetrics { get; set; } = false;
 
             public TimeSpan? RecycleListenersEvery { get; set; } =
-#if NET5_0
+#if NET5_0_OR_GREATER
                 TimeSpan.FromDays(1);
 #else
                 null;

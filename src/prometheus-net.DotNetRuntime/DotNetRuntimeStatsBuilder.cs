@@ -226,7 +226,7 @@ namespace Prometheus.DotNetRuntime
                 return this;
             }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
             /// <summary>
             /// Specifies a custom interval to recycle collectors. Defaults to 1 day.
             /// </summary>
