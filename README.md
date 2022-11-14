@@ -62,8 +62,8 @@ The harder you work the .NET core runtime, the more events it generates. Event g
 - **Exception stats with `CaptureLevel.Errors`**: for every exception throw, an event is generated.
 
 #### Recycling collectors
-There have been long-running [performance issue present since .NET core 3.1](https://github.com/dotnet/runtime/issues/43985#issuecomment-800629516) that will see CPU consumption grow over time when long-running trace sessions are used. 
-As a workaround, the ability to recycle (aka stop + start) collectors was added for applications targeting .NET 5+:
+There have been long-running [performance issues since .NET core 3.1](https://github.com/dotnet/runtime/issues/43985#issuecomment-800629516) that could see CPU consumption grow over time when long-running trace sessions are used. 
+While many of the performance issues have been addressed now in .NET 6.0, a workaround was identified: stopping and starting (AKA recycling) collectors periodically helped reduce CPU consumption:
 ```
 IDisposable collector = DotNetRuntimeStatsBuilder.Default()
 	// Recycles all collectors once every day
