@@ -86,7 +86,8 @@ namespace AspNetCoreExample
                     .WithGcStats(CaptureLevel.Verbose)
                     .WithThreadPoolStats(CaptureLevel.Informational)
                     .WithExceptionStats(CaptureLevel.Errors)
-                    .WithJitStats();
+                    .WithJitStats()
+                    .WithKestrelStats(CaptureLevel.Informational);
             }
             
             builder 

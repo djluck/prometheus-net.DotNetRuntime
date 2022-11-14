@@ -1,48 +1,62 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "prometheus-net.DotNetRuntime", "src\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntime.csproj", "{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "prometheus-net.DotNetRuntime", "src\prometheus-net.DotNetRuntime\prometheus-net.DotNetRuntime.csproj", "{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "prometheus-net.DotNetRuntime.Tests", "src\prometheus-net.DotNetRuntime.Tests\prometheus-net.DotNetRuntime.Tests.csproj", "{7F4E2E72-5745-4312-B238-CD7B731957B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "prometheus-net.DotNetRuntime.Tests", "src\prometheus-net.DotNetRuntime.Tests\prometheus-net.DotNetRuntime.Tests.csproj", "{7F4E2E72-5745-4312-B238-CD7B731957B0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{31AD912F-A1DC-434A-8C8D-049F4BBD67D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreExample", "examples\AspNetCoreExample\AspNetCoreExample.csproj", "{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreExample", "examples\AspNetCoreExample\AspNetCoreExample.csproj", "{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "src\Benchmarks\Benchmarks.csproj", "{DD607E45-45AD-4F9D-9102-82BD99E49BEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "src\Benchmarks\Benchmarks.csproj", "{DD607E45-45AD-4F9D-9102-82BD99E49BEC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{D8594A14-5AC8-40F3-B346-38A266B235E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocsGenerator", "tools\DocsGenerator\DocsGenerator.csproj", "{193B461A-49E4-4178-B88C-BA0EF6B4FC55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocsGenerator", "tools\DocsGenerator\DocsGenerator.csproj", "{193B461A-49E4-4178-B88C-BA0EF6B4FC55}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A25FB96-03CD-4D50-B46A-8E3A44E7520E}"
+	ProjectSection(SolutionItems) = preProject
+		examples\docker-compose.yml = examples\docker-compose.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Release|Any CPU = Release|Any CPU
 		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7F4E2E72-5745-4312-B238-CD7B731957B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7F4E2E72-5745-4312-B238-CD7B731957B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A40AD08A-53CB-40F3-A6D8-6FFCEC024289}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7F4E2E72-5745-4312-B238-CD7B731957B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7F4E2E72-5745-4312-B238-CD7B731957B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{193B461A-49E4-4178-B88C-BA0EF6B4FC55}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{193B461A-49E4-4178-B88C-BA0EF6B4FC55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F4E2E72-5745-4312-B238-CD7B731957B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F4E2E72-5745-4312-B238-CD7B731957B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD607E45-45AD-4F9D-9102-82BD99E49BEC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{193B461A-49E4-4178-B88C-BA0EF6B4FC55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{193B461A-49E4-4178-B88C-BA0EF6B4FC55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{193B461A-49E4-4178-B88C-BA0EF6B4FC55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{193B461A-49E4-4178-B88C-BA0EF6B4FC55}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D01E9ED3-E35C-4F44-A5AD-5350E43AA636} = {31AD912F-A1DC-434A-8C8D-049F4BBD67D4}
 		{193B461A-49E4-4178-B88C-BA0EF6B4FC55} = {D8594A14-5AC8-40F3-B346-38A266B235E0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {542EF13B-659B-4462-9961-99DCC8AF669F}
 	EndGlobalSection
 EndGlobal

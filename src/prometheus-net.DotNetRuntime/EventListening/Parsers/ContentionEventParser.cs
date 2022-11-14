@@ -53,8 +53,6 @@ namespace Prometheus.DotNetRuntime.EventListening.Parsers
                 event Action<ContentionEndEvent> ContentionEnd;
             }
             
-            
-
             public class ContentionStartEvent
             {
                 public static readonly ContentionStartEvent Instance = new();
