@@ -90,7 +90,7 @@ namespace AspNetCoreExample
             }
             
             builder 
-#if NET5_0
+#if NET5_0_OR_GREATER
                 .RecycleCollectorsEvery(_options.RecycleEvery)
 #endif
                 .WithErrorHandler(ex => _logger.LogError(ex, "Unexpected exception occurred in prometheus-net.DotNetRuntime"));

@@ -102,7 +102,7 @@ namespace Prometheus.DotNetRuntime.Tests.IntegrationTests
             return toConfigure.WithJitStats(CaptureLevel.Counters, SampleEvery.OneEvent);
         }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
         
         [Test]
         public void When_Running_On_NET50_Then_Counts_Of_Methods_Are_Recorded()

@@ -202,6 +202,10 @@ namespace Prometheus.DotNetRuntime
 
             public TimeSpan? RecycleListenersEvery { get; set; } =
 #if NET5_0
+                // only default to enabled for .NET 5. .NET 6 had/ has issues where recycling collectors could lead to 
+                // problems, see https://github.com/dotnet/runtime/pull/76431
+                // HOWEVER, people have mentioned that recycling is still required under .NET 6.0: https://github.com/dotnet/runtime/pull/76431
+                // As a compromise, we won't enable it by default but will allow people to opt-in
                 TimeSpan.FromDays(1);
 #else
                 null;

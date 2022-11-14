@@ -68,7 +68,7 @@ namespace Prometheus.DotNetRuntime.Tests.EventListening
         }
 #endif
         
-#if NET5_0
+#if NET5_0_OR_GREATER
 
         [Test]
         public void When_Calling_GetEventInterfacesForCurrentRuntime_On_Net50_Then_Returns_Interfaces_For_Net50_Runtime_And_Below()
