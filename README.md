@@ -71,11 +71,11 @@ IDisposable collector = DotNetRuntimeStatsBuilder.Default()
 	.StartCollecting()
 ```
 
-[This was observed to reduce CPU consumption over time](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/6#issuecomment-784540220) but this technique has been identified as a [possible culprit that can lead
+While this [has been observed to reduce CPU consumption](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/6#issuecomment-784540220) this technique has been identified as a [possible culprit that can lead
 to application instability](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/72). 
 
-The behaviour on different runtimes is:
-- .NET 3.1: verified to cause massive instability, cannot enable recycling.
+Behaviour on different runtime versions is:
+- .NET core 3.1: recycling verified to cause massive instability, cannot enable recycling.
 - .NET 5.0: recycling verified to be beneficial, recycling every day enabled by default.
 - .NET 6.0+: recycling verified to be less necesarry due to long-standing issues being addressed although [some users report recycling to be beneficial](https://github.com/djluck/prometheus-net.DotNetRuntime/pull/73#issuecomment-1308558226), 
   disabled by default but recycling can be enabled.
