@@ -12,7 +12,7 @@ These metrics are essential for understanding the performance of any non-trivial
 
 ## Using this package
 ### Requirements
-- .NET core 3.1 (runtime version 3.1.11+ is recommended)/ .NET 5.0
+- .NET 5.0+ recommended, .NET core 3.1+ is supported 
 - The [prometheus-net](https://github.com/prometheus-net/prometheus-net) package
 
 ### Install it
@@ -61,7 +61,27 @@ The harder you work the .NET core runtime, the more events it generates. Event g
 - **GC stats with `CaptureLevel.Verbose`**: every 100KB of allocations, an event is emitted. If you are consistently allocating memory at a rate > 1GB/sec, you might like to disable GC stats.
 - **Exception stats with `CaptureLevel.Errors`**: for every exception throw, an event is generated.
 
-There is also a [performance issue present in .NET core 3.1](https://github.com/dotnet/runtime/issues/43985#issuecomment-800629516) that will see CPU consumption grow over time when long-running trace sessions are used. 
+#### Recycling collectors
+There have been long-running [performance issues since .NET core 3.1](https://github.com/dotnet/runtime/issues/43985#issuecomment-800629516) that could see CPU consumption grow over time when long-running trace sessions are used. 
+While many of the performance issues have been addressed now in .NET 6.0, a workaround was identified: stopping and starting (AKA recycling) collectors periodically helped reduce CPU consumption:
+```
+IDisposable collector = DotNetRuntimeStatsBuilder.Default()
+	// Recycles all collectors once every day
+	.RecycleCollectorsEvery(TimeSpan.FromDays(1))
+	.StartCollecting()
+```
+
+While this [has been observed to reduce CPU consumption](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/6#issuecomment-784540220) this technique has been identified as a [possible culprit that can lead
+to application instability](https://github.com/djluck/prometheus-net.DotNetRuntime/issues/72). 
+
+Behaviour on different runtime versions is:
+- .NET core 3.1: recycling verified to cause massive instability, cannot enable recycling.
+- .NET 5.0: recycling verified to be beneficial, recycling every day enabled by default.
+- .NET 6.0+: recycling verified to be less necesarry due to long-standing issues being addressed although [some users report recycling to be beneficial](https://github.com/djluck/prometheus-net.DotNetRuntime/pull/73#issuecomment-1308558226), 
+  disabled by default but recycling can be enabled.
+  
+> TLDR: If you observe increasing CPU over time, try enabling recycling. If you see unexpected crashes after using this application, try disabling recycling.
+
 
 ## Examples
 An example `docker-compose` stack is available in the [`examples/`](examples/) folder. Start it with:

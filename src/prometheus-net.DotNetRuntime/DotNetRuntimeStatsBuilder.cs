@@ -226,7 +226,7 @@ namespace Prometheus.DotNetRuntime
                 return this;
             }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
             /// <summary>
             /// Specifies a custom interval to recycle collectors. Defaults to 1 day.
             /// </summary>
@@ -235,9 +235,9 @@ namespace Prometheus.DotNetRuntime
             /// Recycling the event collectors is a workaround, preventing CPU exhaustion (see https://github.com/dotnet/runtime/issues/43985#issuecomment-793187345 for more info).
             /// During a recycle, existing metrics will not disappear/ reset but will not be updated for a short period (should be at most a couple of seconds). 
             /// </remarks>
-            /// <param name="interval"></param>
+            /// <param name="interval">The interval to recycle at. Set to null to disable recycling.</param>
             /// <returns></returns>
-            public Builder RecycleCollectorsEvery(TimeSpan interval)
+            public Builder RecycleCollectorsEvery(TimeSpan? interval)
             {
 #if DEBUG
                 // In debug mode, allow more aggressive recycling times to verify recycling works correctly
