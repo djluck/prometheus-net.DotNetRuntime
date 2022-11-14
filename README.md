@@ -12,7 +12,7 @@ These metrics are essential for understanding the performance of any non-trivial
 
 ## Using this package
 ### Requirements
-- .NET 5.0+ recommended, .NET core 3.1+ is supported by not recommended
+- .NET 5.0+ recommended, .NET core 3.1+ is supported 
 - The [prometheus-net](https://github.com/prometheus-net/prometheus-net) package
 
 ### Install it
@@ -77,7 +77,7 @@ to application instability](https://github.com/djluck/prometheus-net.DotNetRunti
 The behaviour on different runtimes is:
 - .NET 3.1: verified to cause massive instability, cannot enable recycling.
 - .NET 5.0: recycling verified to be beneficial, recycling every day enabled by default.
-- .NET 6.0+: recycling verified to be less necesarry although [some users report recycling to be beneficial](https://github.com/djluck/prometheus-net.DotNetRuntime/pull/73#issuecomment-1308558226), 
+- .NET 6.0+: recycling verified to be less necesarry due to long-standing issues being addressed although [some users report recycling to be beneficial](https://github.com/djluck/prometheus-net.DotNetRuntime/pull/73#issuecomment-1308558226), 
   disabled by default but recycling can be enabled.
   
 > TLDR: If you observe increasing CPU over time, try enabling recycling. If you see unexpected crashes after using this application, try disabling recycling.
