@@ -31,7 +31,8 @@ namespace Prometheus.DotNetRuntime
                 .WithGcStats()
                 .WithJitStats()
                 .WithSocketStats()
-                .WithExceptionStats();
+                .WithExceptionStats()
+                .WithNameResolution();
         }
 
         /// <summary>
@@ -188,6 +189,25 @@ namespace Prometheus.DotNetRuntime
             {
                 ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Counters, sp => new SocketsEventParser()));
                 _services.TryAddSingletonEnumerable<IMetricProducer, SocketsMetricProducer>();
+
+                return this;
+            }
+
+            /// <summary>
+            /// Include metrics around DNS lookup requests and average duration.
+            /// </summary>
+            /// <param name="histogramBuckets">Buckets for the DNS lookup duration</param>
+            /// <returns></returns>
+            public Builder WithNameResolution(double[] histogramBuckets = null)
+            {
+                ListenerRegistrations.AddOrReplace(ListenerRegistration.Create(CaptureLevel.Counters, sp => new NameResolutionEventParser()));
+                _services.TryAddSingletonEnumerable<IMetricProducer, NameResolutionMetricProducer>();
+
+                var opts = new NameResolutionMetricProducer.Options();
+                if (histogramBuckets != null)
+                    opts.HistogramBuckets = histogramBuckets;
+
+                _services.AddSingleton(opts);
 
                 return this;
             }
