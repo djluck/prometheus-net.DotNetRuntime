@@ -20,7 +20,7 @@ namespace Prometheus.DotNetRuntime
         
         private readonly CollectorRegistry _metricRegistry;
         private readonly Options _options;
-        private readonly object _lockInstance = new ();
+        private static readonly object LockInstance = new ();
         private readonly CancellationTokenSource _ctSource = new();
         private readonly Task _recycleTask;
         private bool _disposed = false;
@@ -34,7 +34,7 @@ namespace Prometheus.DotNetRuntime
             var metrics = Prometheus.Metrics.WithCustomRegistry(_metricRegistry);
             _listenerGlobalOpts = DotNetEventListener.GlobalOptions.CreateFrom(_options, metrics);
             
-            lock (_lockInstance)
+            lock (LockInstance)
             {
                 if (Instances.ContainsKey(_metricRegistry))
                 {
@@ -143,7 +143,7 @@ namespace Prometheus.DotNetRuntime
             }
             finally
             {
-                lock (_lockInstance)
+                lock (LockInstance)
                 {
                     Instances.Remove(_metricRegistry);
                 }
